@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "neU4+AYvIkEN+iOZKl3d0fnP1scUt8jEjjrrxwbmCuU=",
+  "Hash": "aWo4HRrhrx3hAxR9as65Nwm+jwMSz+u9IDy/7rE6FRw=",
   "Source": "FormsBGone",
   "BasePath": "_content/FormsBGone",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "FormsBGone\\wwwroot",
       "Source": "FormsBGone",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\",
       "BasePath": "_content/FormsBGone",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\bundle\\FormsBGone.styles.css",
+      "Identity": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\bundle\\FormsBGone.styles.css",
       "SourceId": "FormsBGone",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\bundle\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\bundle\\",
       "BasePath": "_content/FormsBGone",
       "RelativePath": "FormsBGone.styles.css",
       "AssetKind": "All",
@@ -33,13 +33,13 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\bundle\\FormsBGone.styles.css"
+      "OriginalItemSpec": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\bundle\\FormsBGone.styles.css"
     },
     {
-      "Identity": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\FormsBGone.bundle.scp.css",
+      "Identity": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\FormsBGone.bundle.scp.css",
       "SourceId": "FormsBGone",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\",
       "BasePath": "_content/FormsBGone",
       "RelativePath": "FormsBGone.bundle.scp.css",
       "AssetKind": "All",
@@ -52,13 +52,13 @@
       "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\FormsBGone.bundle.scp.css"
+      "OriginalItemSpec": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\FormsBGone.bundle.scp.css"
     },
     {
-      "Identity": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\app.css",
+      "Identity": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\app.css",
       "SourceId": "FormsBGone",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\",
       "BasePath": "_content/FormsBGone",
       "RelativePath": "app.css",
       "AssetKind": "All",
@@ -74,10 +74,10 @@
       "OriginalItemSpec": "wwwroot\\app.css"
     },
     {
-      "Identity": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "Identity": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\bootstrap\\bootstrap.min.css",
       "SourceId": "FormsBGone",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\",
       "BasePath": "_content/FormsBGone",
       "RelativePath": "bootstrap/bootstrap.min.css",
       "AssetKind": "All",
@@ -93,10 +93,10 @@
       "OriginalItemSpec": "wwwroot\\bootstrap\\bootstrap.min.css"
     },
     {
-      "Identity": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "Identity": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\bootstrap\\bootstrap.min.css.map",
       "SourceId": "FormsBGone",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\",
       "BasePath": "_content/FormsBGone",
       "RelativePath": "bootstrap/bootstrap.min.css.map",
       "AssetKind": "All",
@@ -112,10 +112,10 @@
       "OriginalItemSpec": "wwwroot\\bootstrap\\bootstrap.min.css.map"
     },
     {
-      "Identity": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\favicon.png",
+      "Identity": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\favicon.png",
       "SourceId": "FormsBGone",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\ajesp\\Documents\\school\\2024\\Fall\\Capstone\\Project Repo\\FormsBGone\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\Jtren\\Documents\\School\\Capstone\\capstone-project-okaloosa-teachers-union\\FormsBGone\\wwwroot\\",
       "BasePath": "_content/FormsBGone",
       "RelativePath": "favicon.png",
       "AssetKind": "All",
