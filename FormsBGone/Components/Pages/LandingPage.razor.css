@@ -1,0 +1,63 @@
+﻿.landing-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-image: url('/images/your-background-image.jpg'); /* Replace with your image path */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-content {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+    .hero-content h1 {
+        font-size: 4rem;
+        margin: 0;
+    }
+
+    .hero-content p {
+        font-size: 1.5rem;
+        margin-top: 20px;
+    }
+
+.about-section {
+    padding: 50px 20px;
+    background-color: #f8f9fa;
+    width: 100%;
+}
+
+    .about-section h2 {
+        color: #007bff;
+    }
+
+    .about-section p {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-content p {
+        font-size: 1.2rem;
+    }
+
+    .about-section {
+        padding: 30px 15px;
+    }
+}

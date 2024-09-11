@@ -1,0 +1,14 @@
+﻿h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Additional signup form styles */
+form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
