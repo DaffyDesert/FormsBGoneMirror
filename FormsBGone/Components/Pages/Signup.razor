@@ -1,17 +1,24 @@
 ﻿@page "/signup"
 
-<h3>Sign Up</h3>
-
-<!-- Signup form code goes here -->
-<form>
-    <!-- Example form fields -->
-    <div class="form-group">
-        <label for="email">Email address</label>
-        <input type="email" class="form-control" id="email" placeholder="Enter email">
+<div class="landing-page">
+    <div class="login-wrapper">
+        <div class="login-content">
+            <div class="logo-section">
+                <img src="/Images/logo.png" alt="Forms-B-Gone Logo">
+            </div>
+            <form action="#">
+                <input type="text" placeholder="Email">
+                <input type="text" placeholder="Username">
+                <input type="password" placeholder="Password">
+                <input type="password" placeholder="Confirm Password">
+                <input type="button" class="button" value="Sign Up">
+            </form>
+            <div class="signup">
+                <span class="signup">
+                    Already have an account?
+                    <a href="/">Login</a>
+                </span>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" placeholder="Password">
-    </div>
-    <button type="submit" class="btn btn-primary">Sign Up</button>
-</form>
+</div>

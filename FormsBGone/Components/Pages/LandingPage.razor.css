@@ -1,63 +1,113 @@
 ﻿.landing-page {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.hero-section {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background-image: url('/images/your-background-image.jpg'); /* Replace with your image path */
-    background-size: cover;
-    background-position: center;
-    display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    margin: 0;
 }
 
-.hero-content {
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-    .hero-content h1 {
-        font-size: 4rem;
-        margin: 0;
-    }
-
-    .hero-content p {
-        font-size: 1.5rem;
-        margin-top: 20px;
-    }
-
-.about-section {
-    padding: 50px 20px;
-    background-color: #f8f9fa;
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 60px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    text-align: center;
+    justify-content: center;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     width: 100%;
+    max-width: 600px;
 }
 
-    .about-section h2 {
-        color: #007bff;
+.logo-section {
+    margin-bottom: 30px;
+}
+
+    .logo-section img {
+        max-width: 200px;
+        height: auto;
     }
 
-    .about-section p {
-        font-size: 1.1rem;
-        color: #6c757d;
+.login-content {
+    flex: 1;
+    width: 100%; 
+}
+
+    .login-content form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .login-content input[type="text"],
+    .login-content input[type="password"] {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1.2rem;
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .login-content input.button {
+        background-color: #007bff;
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        margin-top: 20px;
+        width: 90%; 
+        max-width: 500px;
+    }
+
+        .login-content input.button:hover {
+            background-color: #0056b3;
+        }
+
+    .login-content a {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 1.2rem;
         margin-bottom: 20px;
     }
 
-@media (max-width: 768px) {
-    .hero-content h1 {
-        font-size: 2.5rem;
-    }
+        .login-content a:hover {
+            text-decoration: underline;
+        }
 
-    .hero-content p {
+.signup {
+    margin-top: 30px;
+}
+
+    .signup a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
         font-size: 1.2rem;
     }
 
-    .about-section {
-        padding: 30px 15px;
+        .signup a:hover {
+            text-decoration: underline;
+        }
+
+@media (max-width: 768px) {
+    .login-wrapper {
+        flex-direction: column;
+    }
+
+    .login-content input[type="text"],
+    .login-content input[type="password"],
+    .login-content input.button {
+        width: 100%;
     }
 }

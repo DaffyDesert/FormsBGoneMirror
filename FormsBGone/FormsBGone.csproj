@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <None Remove="Components\Layout\MainLayout.razor.css" />
+    <None Remove="wwwroot\Images\logo.png" />
   </ItemGroup>
 
   <ItemGroup>
