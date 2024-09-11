@@ -4,12 +4,14 @@
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    background-image: url('https://xmple.com/wallpaper/blue-gradient-white-linear-3840x2160-c2-87cefa-ffffff-a-105-f-14.svg');
+    background-position: center -30px;
 }
 
 .login-wrapper {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.8);
     padding: 60px;
     border-radius: 8px;
     box-sizing: border-box;

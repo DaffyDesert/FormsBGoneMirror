@@ -1,5 +1,7 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-image: url('https://xmple.com/wallpaper/blue-gradient-white-linear-3840x2160-c2-87cefa-ffffff-a-105-f-14.svg');
+    background-position: center -30px;
 }
 
 a, .btn-link {
