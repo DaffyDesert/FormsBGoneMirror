@@ -2,11 +2,8 @@
 .about-page {
     padding: 2rem;
     font-family: 'Arial', sans-serif;
-    color: #333;
-    background-image: url('https://xmple.com/wallpaper/blue-gradient-white-linear-3840x2160-c2-87cefa-ffffff-a-105-f-14.svg');
-    background-position: center -30px;
-    background-size: cover; /* Ensure the background covers the whole page */
-    background-attachment: fixed; /* Keep the background fixed when scrolling */
+    background: #FFFFFF;
+    background-image: none;
 }
 
 /* About Page Wrapper */

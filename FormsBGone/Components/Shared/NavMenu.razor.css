@@ -3,11 +3,15 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.8);
+    background: #FFFFFF;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #F0F0F0;
+    position: sticky; /* Makes the navbar sticky */
+    top: 0; /* Sticks the navbar to the top */
+    z-index: 1000; /* Ensures the navbar stays on top of other content */
 }
 
 .nav-left {
@@ -27,21 +31,26 @@ li {
         display: block;
         color: #1A5276;
         text-align: center;
-        padding: 14px 16px;
+        padding: 10px 20px;
         text-decoration: none;
-        transition: background-color 0.3s ease, color 0.3s ease;
+        line-height: 1;
+        transition: none; /* Removes any animation */
     }
 
         /* Hover State */
         li ::deep .nav-link:hover:not(.active) {
             background-color: #AED6F1;
             color: #1A5276;
+            border-radius: 20px;
+            transition: none; /* Removes any animation */
         }
 
         /* Active Link State */
         li ::deep .nav-link.active {
             background-color: #5499C7;
             color: #ffffff;
+            border-radius: 20px;
+            transition: none; /* Removes any animation */
         }
 
 /* Brand Text */
@@ -51,6 +60,7 @@ li {
     text-decoration: none;
     font-weight: bold;
     font-size: 1.2em;
+    line-height: 1;
 }
 
 /* Logo Image */
