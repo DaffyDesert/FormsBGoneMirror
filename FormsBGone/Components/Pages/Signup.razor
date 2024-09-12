@@ -1,4 +1,8 @@
 ﻿@page "/signup"
+@inject NavigationManager Navigation
+@inject CapstoneContext DbContext
+@using FormsBGone.Model;
+@using Microsoft.EntityFrameworkCore;
 
 <div class="landing-page">
     <div class="login-wrapper">
@@ -6,13 +10,27 @@
             <div class="logo-section">
                 <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
             </div>
-            <form action="#">
-                <input type="text" placeholder="Email">
-                <input type="text" placeholder="Username">
-                <input type="password" placeholder="Password">
-                <input type="password" placeholder="Confirm Password">
-                <input type="button" class="button" value="Sign Up">
+            <form>
+                <input type="text" placeholder="Email" @bind="Email">
+                <input type="text" placeholder="Username" @bind="Username">
+                <input type="password" placeholder="Password" @bind="Password">
+                <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword">
+                <input type="button" class="button" value="Sign Up" @onclick="HandleSignup">
+                <!--this go to about isnt even working-->
+                <button @onclick="RedirectToAbout">Go to About</button>
             </form>
+
+            @if (SuccessMessageVisible)
+            {
+                <div class="alert alert-success">
+                    Account created successfully! Redirecting to login...
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger">@ErrorMessage</div>
+            }
+
             <div class="signup">
                 <span class="signup">
                     Already have an account?
@@ -22,3 +40,85 @@
         </div>
     </div>
 </div>
+
+@code {
+    private string Email { get; set; }
+    private string Username { get; set; }
+    private string Password { get; set; }
+    private string ConfirmPassword { get; set; }
+    private string ErrorMessage { get; set; }
+    private bool SuccessMessageVisible { get; set; }
+
+    private void RedirectToAbout()
+    {
+        Navigation.NavigateTo("/about");
+    }
+
+    private async Task HandleSignup()
+    {
+        //cant even get this signup method to trigger...
+        Console.WriteLine("HandleSignup method triggered.");
+
+        ErrorMessage = string.Empty;
+        SuccessMessageVisible = false;
+
+        var userType = await FindUserTypeByEmail(Email);
+        if (userType == null)
+        {
+            ErrorMessage = "Email not found in any user records.";
+            return;
+        }
+
+        if (Password != ConfirmPassword)
+        {
+            ErrorMessage = "Passwords do not match.";
+            return;
+        }
+
+        var encryptedPassword = EncryptPassword(Password);
+
+        var account = new Account
+            {
+                Email = Email,
+                Username = Username,
+                EncryptedPassword = encryptedPassword,
+                AccountType = userType
+            };
+
+        try
+        {
+            DbContext.Accounts.Add(account);
+            await DbContext.SaveChangesAsync();
+
+            SuccessMessageVisible = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to create account: {ex.Message}";
+        }
+    }
+
+    private async Task<string?> FindUserTypeByEmail(string email)
+    {
+        if (await DbContext.Parents.AnyAsync(p => p.Email == email))
+        {
+            return "Parent";
+        }
+        if (await DbContext.Teachers.AnyAsync(t => t.Email == email))
+        {
+            return "Teacher";
+        }
+        if (await DbContext.Administrators.AnyAsync(a => a.Email == email))
+        {
+            return "Administrator";
+        }
+
+        return null;
+    }
+
+    private string EncryptPassword(string password)
+    {
+        // Implement your password encryption logic here
+        return password; // Replace with real encryption
+    }
+}
