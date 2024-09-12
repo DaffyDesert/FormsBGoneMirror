@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FormsBGone.NewFolder;
+namespace FormsBGone.Model;
 
 public partial class Student
 {
     public int StudentId { get; set; }
 
-    public string? FirstName { get; set; }
+    public string FirstName { get; set; } = null!;
 
     public string? MiddleInitial { get; set; }
 
-    public string? LastName { get; set; }
+    public string LastName { get; set; } = null!;
 
-    public int? Grade { get; set; }
+    public int Grade { get; set; }
 
-    public string? ParentEmail { get; set; }
+    public string ParentEmail { get; set; } = null!;
 
-    public int? TeacherId { get; set; }
+    public string TeacherEmail { get; set; } = null!;
 
     public virtual ICollection<Form> Forms { get; set; } = new List<Form>();
 
-    public virtual Parent? ParentEmailNavigation { get; set; }
+    public virtual Parent ParentEmailNavigation { get; set; } = null!;
 
-    public virtual Teacher? Teacher { get; set; }
+    public virtual Teacher TeacherEmailNavigation { get; set; } = null!;
 }
