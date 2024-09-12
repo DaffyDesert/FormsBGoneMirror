@@ -1,3 +1,67 @@
-﻿@page "/About"
+﻿@page "/about"
 
-<h3>About</h3>
+<div class="about-page">
+    <div class="about-wrapper">
+        <!-- Added About Wrapper -->
+        <h1 class="page-title">About Page</h1>
+
+        <!-- Product Goal Section -->
+        <section class="product-goal">
+            <h2 class="section-title">Product Goal</h2>
+            <p class="section-description">
+                The goal of this application is to simplify the management of school-related forms. By moving the process online,
+                parents can easily complete and submit forms, teachers can track form completion, and administrators can effectively
+                manage the documents and user permissions, reducing paperwork and improving efficiency.
+            </p>
+        </section>
+
+        <hr class="separator" />
+
+        <!-- Features by User Role Section -->
+        <section class="features">
+            <h2 class="section-title">Features by User Role</h2>
+
+            <!-- Administrator Section -->
+            <div class="card admin-card">
+                <div class="card-body">
+                    <h3 class="card-title">Administrator</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Form Management:</strong> Full CRUD operations over school documents.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Student/Staff Management:</strong> Manage student and teacher access levels with full CRUD operations.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Teacher Section -->
+            <div class="card teacher-card">
+                <div class="card-body">
+                    <h3 class="card-title">Teacher</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>View Form Status:</strong> View the completion status of student forms, with the ability to filter students by class or search by name for easier management.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Specialized Form Request (Optional):</strong> Request special forms (e.g., field trip or movie forms) with admin approval required.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Parent Section -->
+            <div class="card parent-card">
+                <div class="card-body">
+                    <h3 class="card-title">Parent</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Fill in Forms:</strong> Log in, view, and complete forms for their children online.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div> <!-- End About Wrapper -->
+</div>

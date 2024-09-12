@@ -1,1 +1,142 @@
-﻿
+﻿/* General Styles for About Page */
+.about-page {
+    padding: 2rem;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    background-image: url('https://xmple.com/wallpaper/blue-gradient-white-linear-3840x2160-c2-87cefa-ffffff-a-105-f-14.svg');
+    background-position: center -30px;
+    background-size: cover; /* Ensure the background covers the whole page */
+    background-attachment: fixed; /* Keep the background fixed when scrolling */
+}
+
+/* About Page Wrapper */
+.about-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9); /* Slightly less opaque than the login wrapper */
+    padding: 40px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 800px;
+    width: 100%;
+}
+
+/* Page Title */
+.page-title {
+    font-size: 2.5rem;
+    color: #0056b3; /* A deeper shade of blue */
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Section Styling */
+.product-goal,
+.features {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Section Titles */
+.section-title {
+    font-size: 1.75rem;
+    color: #343a40; /* Dark gray for section titles */
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* Section Descriptions */
+.section-description {
+    font-size: 1.125rem;
+    color: #495057; /* Slightly lighter gray */
+    line-height: 1.6;
+    text-align: left; /* Align text to the left */
+}
+
+/* Separator */
+.separator {
+    border: 0;
+    border-top: 2px solid #dee2e6; /* Light gray separator */
+    margin: 3rem auto;
+    width: 80%;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #e0e0e0; /* Light gray border */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Specific Background Colors and Text Colors for Cards */
+.admin-card .card-body {
+    background-color: #e9f7fc; /* Lightest blue background */
+}
+
+.admin-card .card-title {
+    color: #003d7a; /* Dark blue text for card title */
+}
+
+.teacher-card .card-body {
+    background-color: #b3d9ff; /* Lighter blue background */
+}
+
+.teacher-card .card-title {
+    color: #003d7a; /* Dark blue text for card title */
+}
+
+.parent-card .card-body {
+    background-color: #d0e0ff; /* Slightly darker blue background */
+}
+
+.parent-card .card-title {
+    color: #003d7a; /* Dark blue text for card title */
+}
+
+/* List Group */
+.list-group {
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.list-group-item {
+    padding: 1rem;
+    border: 1px solid #e0e0e0; /* Light gray border */
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    background-color: #ffffff; /* White background for list items */
+}
+
+    .list-group-item strong {
+        font-weight: bold;
+        color: #343a40; /* Dark gray for strong text */
+    }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .section-description {
+        font-size: 1rem;
+    }
+}
