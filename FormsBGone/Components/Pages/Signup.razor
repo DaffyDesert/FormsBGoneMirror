@@ -15,10 +15,13 @@
                 <input type="text" placeholder="Username" @bind="Username">
                 <input type="password" placeholder="Password" @bind="Password">
                 <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword">
-                <input type="button" class="button" value="Sign Up" @onclick="HandleSignup">
-                <!--this go to about isnt even working-->
-                <button @onclick="RedirectToAbout">Go to About</button>
+                <button class="button" type="submit" @onclick="HandleSignup">Sign Up</button>
             </form>
+
+            <!-- Doesn't work when you call the method - but works as NavLink & with href -->
+            <NavLink class="nav-link" href="about">
+                Go to About
+            </NavLink>
 
             @if (SuccessMessageVisible)
             {
@@ -49,14 +52,8 @@
     private string ErrorMessage { get; set; }
     private bool SuccessMessageVisible { get; set; }
 
-    private void RedirectToAbout()
-    {
-        Navigation.NavigateTo("/about");
-    }
-
     private async Task HandleSignup()
     {
-        //cant even get this signup method to trigger...
         Console.WriteLine("HandleSignup method triggered.");
 
         ErrorMessage = string.Empty;
@@ -66,12 +63,14 @@
         if (userType == null)
         {
             ErrorMessage = "Email not found in any user records.";
+            StateHasChanged();  // Ensure UI updates
             return;
         }
 
         if (Password != ConfirmPassword)
         {
             ErrorMessage = "Passwords do not match.";
+            StateHasChanged();  // Ensure UI updates
             return;
         }
 
@@ -91,10 +90,12 @@
             await DbContext.SaveChangesAsync();
 
             SuccessMessageVisible = true;
+            StateHasChanged();  // Ensure UI updates
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to create account: {ex.Message}";
+            StateHasChanged();  // Ensure UI updates
         }
     }
 
