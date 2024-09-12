@@ -1,0 +1,109 @@
+﻿/* General Styles for About Page */
+.about-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Start from top instead of centering vertically */
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: 'Arial', sans-serif;
+    background: #FFFFFF;
+}
+
+/* About Page Wrapper */
+.about-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9); /* Slightly less opaque */
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow similar to login-wrapper */
+    text-align: center;
+    margin: auto; /* Centers horizontally and allows vertical flexibility */
+    max-width: 800px;
+    width: 100%;
+}
+
+/* Page Title */
+.page-title {
+    font-size: 2.5rem;
+    color: #0056b3; /* A deeper shade of blue */
+    margin-bottom: 2rem;
+}
+
+/* Section Styling */
+.product-goal, .features {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Section Titles */
+.section-title {
+    font-size: 1.75rem;
+    color: #343a40;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* Section Descriptions */
+.section-description {
+    font-size: 1.125rem;
+    color: #495057;
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Background Colors for Cards */
+.admin-card .card-body {
+    background-color: #e9f7fc;
+}
+
+.teacher-card .card-body {
+    background-color: #b3d9ff;
+}
+
+.parent-card .card-body {
+    background-color: #d0e0ff;
+}
+
+/* List Group */
+.list-group-item {
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .section-description {
+        font-size: 1rem;
+    }
+}

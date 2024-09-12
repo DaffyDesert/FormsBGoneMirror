@@ -1,0 +1,115 @@
+﻿.landing-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #FFFFFF;
+}
+
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 60px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    justify-content: center;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 600px;
+}
+
+.logo-section {
+    margin-bottom: 30px;
+}
+
+    .logo-section img {
+        max-width: 200px;
+        height: auto;
+    }
+
+.login-content {
+    flex: 1;
+    width: 100%;
+}
+
+    .login-content form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .login-content input[type="text"],
+    .login-content input[type="password"] {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1.2rem;
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .login-content input.button {
+        background-color: #007bff;
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        margin-top: 20px;
+        width: 90%;
+        max-width: 500px;
+    }
+
+        .login-content input.button:hover {
+            background-color: #0056b3;
+        }
+
+    .login-content a {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+
+        .login-content a:hover {
+            text-decoration: underline;
+        }
+
+.signup {
+    margin-top: 30px;
+}
+
+    .signup a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+        .signup a:hover {
+            text-decoration: underline;
+        }
+
+@media (max-width: 768px) {
+    .login-wrapper {
+        flex-direction: column;
+    }
+
+    .login-content input[type="text"],
+    .login-content input[type="password"],
+    .login-content input.button {
+        width: 100%;
+    }
+}

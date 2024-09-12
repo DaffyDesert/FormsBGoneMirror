@@ -3,9 +3,11 @@ using System.Collections.Generic;
 
 namespace FormsBGone.Model;
 
-public partial class Parent
+public partial class Administrator
 {
     public string Email { get; set; } = null!;
+
+    public int AdminId { get; set; }
 
     public string FirstName { get; set; } = null!;
 
@@ -13,7 +15,5 @@ public partial class Parent
 
     public string LastName { get; set; } = null!;
 
-    public virtual Account EmailNavigation { get; set; } = null!;
-
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+    public virtual ICollection<Teacher> Teachers { get; set; } = new List<Teacher>();
 }

@@ -1,0 +1,69 @@
+﻿ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #F0F0F0;
+    position: sticky; /* Makes the navbar sticky */
+    top: 0; /* Sticks the navbar to the top */
+    z-index: 1000; /* Ensures the navbar stays on top of other content */
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+}
+
+li {
+    display: inline-block;
+}
+
+    li ::deep .nav-link {
+        display: block;
+        color: #1A5276;
+        text-align: center;
+        padding: 10px 20px;
+        text-decoration: none;
+        line-height: 1;
+        transition: none; /* Removes any animation */
+    }
+
+        /* Hover State */
+        li ::deep .nav-link:hover:not(.active) {
+            background-color: #AED6F1;
+            color: #1A5276;
+            border-radius: 20px;
+            transition: none; /* Removes any animation */
+        }
+
+        /* Active Link State */
+        li ::deep .nav-link.active {
+            background-color: #5499C7;
+            color: #ffffff;
+            border-radius: 20px;
+            transition: none; /* Removes any animation */
+        }
+
+/* Brand Text */
+.brand {
+    color: #1A5276;
+    padding: 14px 0 14px 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+/* Logo Image */
+.logo {
+    height: 60px;
+}
