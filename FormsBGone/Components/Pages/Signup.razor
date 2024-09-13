@@ -1,6 +1,7 @@
 ﻿@page "/signup"
 @inject NavigationManager Navigation
 @inject CapstoneContext DbContext
+@rendermode InteractiveServer
 @using FormsBGone.Model;
 @using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@
                 <input type="text" placeholder="Username" @bind="Username">
                 <input type="password" placeholder="Password" @bind="Password">
                 <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword">
-                <button class="button" type="submit" @onclick="HandleSignup">Sign Up</button>
+                <button class="btn btn-primary" @onclick="HandleSignup">Sign Up</button>
             </form>
 
             <!-- Doesn't work when you call the method - but works as NavLink & with href -->
@@ -52,14 +53,14 @@
     private string ErrorMessage { get; set; }
     private bool SuccessMessageVisible { get; set; }
 
-    private async Task HandleSignup()
+    private void HandleSignup()
     {
-        Console.WriteLine("HandleSignup method triggered.");
+        System.Diagnostics.Debug.WriteLine("HandleSignup method triggered.");
 
         ErrorMessage = string.Empty;
         SuccessMessageVisible = false;
 
-        var userType = await FindUserTypeByEmail(Email);
+        var userType = FindUserTypeByEmail(Email);
         if (userType == null)
         {
             ErrorMessage = "Email not found in any user records.";
@@ -87,7 +88,7 @@
         try
         {
             DbContext.Accounts.Add(account);
-            await DbContext.SaveChangesAsync();
+            DbContext.SaveChanges();
 
             SuccessMessageVisible = true;
             StateHasChanged();  // Ensure UI updates
@@ -99,17 +100,17 @@
         }
     }
 
-    private async Task<string?> FindUserTypeByEmail(string email)
+    private string FindUserTypeByEmail(string email)
     {
-        if (await DbContext.Parents.AnyAsync(p => p.Email == email))
+        if (DbContext.Parents.Any(p => p.Email == email))
         {
             return "Parent";
         }
-        if (await DbContext.Teachers.AnyAsync(t => t.Email == email))
+        if (DbContext.Teachers.Any(t => t.Email == email))
         {
             return "Teacher";
         }
-        if (await DbContext.Administrators.AnyAsync(a => a.Email == email))
+        if (DbContext.Administrators.Any(a => a.Email == email))
         {
             return "Administrator";
         }
