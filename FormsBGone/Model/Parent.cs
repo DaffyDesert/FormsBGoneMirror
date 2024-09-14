@@ -13,7 +13,5 @@ public partial class Parent
 
     public string LastName { get; set; } = null!;
 
-    public virtual Account EmailNavigation { get; set; } = null!;
-
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }
