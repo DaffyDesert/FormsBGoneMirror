@@ -110,11 +110,6 @@ public partial class CapstoneContext : DbContext
             entity.Property(e => e.MiddleInitial)
                 .HasMaxLength(50)
                 .HasColumnName("Middle_Initial");
-
-            entity.HasOne(d => d.EmailNavigation).WithOne(p => p.Parent)
-                .HasForeignKey<Parent>(d => d.Email)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Parent_Account");
         });
 
         modelBuilder.Entity<Student>(entity =>
@@ -171,11 +166,6 @@ public partial class CapstoneContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("Superior_Email");
             entity.Property(e => e.TeacherId).HasColumnName("Teacher_Id");
-
-            entity.HasOne(d => d.EmailNavigation).WithOne(p => p.Teacher)
-                .HasForeignKey<Teacher>(d => d.Email)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Teacher_Account");
 
             entity.HasOne(d => d.SuperiorEmailNavigation).WithMany(p => p.Teachers)
                 .HasForeignKey(d => d.SuperiorEmail)

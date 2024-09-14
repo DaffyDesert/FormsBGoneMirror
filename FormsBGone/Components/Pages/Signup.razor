@@ -11,29 +11,25 @@
             <div class="logo-section">
                 <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
             </div>
-            <form>
-                <input type="text" placeholder="Email" @bind="Email">
-                <input type="text" placeholder="Username" @bind="Username">
-                <input type="password" placeholder="Password" @bind="Password">
-                <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword">
-                <button class="btn btn-primary" @onclick="HandleSignup">Sign Up</button>
-            </form>
-
-            <!-- Doesn't work when you call the method - but works as NavLink & with href -->
-            <NavLink class="nav-link" href="about">
-                Go to About
-            </NavLink>
 
             @if (SuccessMessageVisible)
             {
-                <div class="alert alert-success">
+                <div class="alert alert-success text-center">
                     Account created successfully! Redirecting to login...
                 </div>
             }
             @if (!string.IsNullOrEmpty(ErrorMessage))
             {
-                <div class="alert alert-danger">@ErrorMessage</div>
+                <div class="alert alert-danger text-center">@ErrorMessage</div>
             }
+
+            <form onsubmit="return false;">
+                <input type="text" placeholder="Email" @bind="Email">
+                <input type="text" placeholder="Username" @bind="Username">
+                <input type="password" placeholder="Password" @bind="Password">
+                <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword">
+                <button type="button" class="btn btn-primary" @onclick="HandleSignup">Sign Up</button>
+            </form>
 
             <div class="signup">
                 <span class="signup">
@@ -55,8 +51,6 @@
 
     private void HandleSignup()
     {
-        System.Diagnostics.Debug.WriteLine("HandleSignup method triggered.");
-
         ErrorMessage = string.Empty;
         SuccessMessageVisible = false;
 
@@ -64,14 +58,12 @@
         if (userType == null)
         {
             ErrorMessage = "Email not found in any user records.";
-            StateHasChanged();  // Ensure UI updates
             return;
         }
 
         if (Password != ConfirmPassword)
         {
             ErrorMessage = "Passwords do not match.";
-            StateHasChanged();  // Ensure UI updates
             return;
         }
 
@@ -91,28 +83,43 @@
             DbContext.SaveChanges();
 
             SuccessMessageVisible = true;
-            StateHasChanged();  // Ensure UI updates
+
+            // Navigate to login after a short delay
+            System.Threading.Tasks.Task.Delay(2000).ContinueWith(task =>
+            {
+                Navigation.NavigateTo("/");
+            });
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to create account: {ex.Message}";
-            StateHasChanged();  // Ensure UI updates
         }
     }
 
     private string FindUserTypeByEmail(string email)
     {
-        if (DbContext.Parents.Any(p => p.Email == email))
+        foreach (var parent in DbContext.Parents)
         {
-            return "Parent";
+            if (parent.Email == email)
+            {
+                return "Parent";
+            }
         }
-        if (DbContext.Teachers.Any(t => t.Email == email))
+
+        foreach (var teacher in DbContext.Teachers)
         {
-            return "Teacher";
+            if (teacher.Email == email)
+            {
+                return "Teacher";
+            }
         }
-        if (DbContext.Administrators.Any(a => a.Email == email))
+
+        foreach (var administrator in DbContext.Administrators)
         {
-            return "Administrator";
+            if (administrator.Email == email)
+            {
+                return "Administrator";
+            }
         }
 
         return null;
@@ -120,7 +127,8 @@
 
     private string EncryptPassword(string password)
     {
+        string encryptedPassword = password;
         // Implement your password encryption logic here
-        return password; // Replace with real encryption
+        return encryptedPassword;
     }
 }

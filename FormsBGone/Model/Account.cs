@@ -15,8 +15,4 @@ public partial class Account
     /// Parent, Teacher, or Admin
     /// </summary>
     public string? AccountType { get; set; }
-
-    public virtual Parent? Parent { get; set; }
-
-    public virtual Teacher? Teacher { get; set; }
 }
