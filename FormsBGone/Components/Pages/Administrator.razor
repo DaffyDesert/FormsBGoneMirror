@@ -1,4 +1,6 @@
 ﻿@page "/administrator"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 <h3>Administrator</h3>
 
