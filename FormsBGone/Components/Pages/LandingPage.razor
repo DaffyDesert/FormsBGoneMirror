@@ -54,35 +54,44 @@
 
         // Decode the token to get the user's role
         var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var role = jwtToken.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-
-
-        if (role == null)
+        try
         {
-            Console.WriteLine("role is null");
+            var jwtToken = handler.ReadJwtToken(token);
+            var role = jwtToken.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
+
+            if (role == null)
+            {
+                Console.WriteLine("Role is null. Check token claims.");
+            }
+            else
+            {
+                // Navigate based on the user's role
+                switch (role)
+                {
+                    case "Teacher":
+                        Console.WriteLine("Navigating to /teacher");
+                        Navigation.NavigateTo("/teacher");
+                        break;
+                    case "Parent":
+                        Console.WriteLine("Navigating to /parent");
+                        Navigation.NavigateTo("/parent");
+                        break;
+                    case "Admin":
+                        Console.WriteLine("Navigating to /administrator");
+                        Navigation.NavigateTo("/administrator");
+                        break;
+                    default:
+                        ErrorMessage = $"Role '{role}' not recognized.";
+                        Console.WriteLine(ErrorMessage);
+                        break;
+                }
+            }
         }
-
-        // Navigate based on the user's role
-        switch (role)
+        catch (Exception ex)
         {
-            case "Teacher":
-                Console.WriteLine("Navigating to /teacher");
-                Navigation.NavigateTo("/teacher");
-                break;
-            case "Parent":
-                Console.WriteLine("Navigating to /parent");
-                Navigation.NavigateTo("/parent");
-                break;
-            case "Admin":
-                Console.WriteLine("Navigating to /administrator");
-                Navigation.NavigateTo("/administrator");
-                break;
-            default:
-                ErrorMessage = "Role not recognized." + role;
-                Console.WriteLine(ErrorMessage);
-                Console.WriteLine(role);
-                break;
+            ErrorMessage = "An error occurred while processing the token.";
+            Console.WriteLine($"Exception: {ex.Message}");
         }
     }
+
 }

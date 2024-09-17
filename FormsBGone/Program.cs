@@ -40,6 +40,16 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Register the AuthMessageHandler
+builder.Services.AddScoped<AuthMessageHandler>();
+
+// Register HttpClient with AuthMessageHandler
+builder.Services.AddHttpClient("ApiClient")
+    .AddHttpMessageHandler<AuthMessageHandler>();
+
+// Register HttpClient for the app
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline

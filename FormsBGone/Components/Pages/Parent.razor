@@ -2,8 +2,23 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Parent")]
 @rendermode InteractiveServer
+@inject HttpClient HttpClient
+
 <h3>Parent</h3>
 
 @code {
+    private string _data;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await HttpClient.GetAsync("api/protected-resource");
+        if (response.IsSuccessStatusCode)
+        {
+            _data = await response.Content.ReadAsStringAsync();
+        }
+        else
+        {
+            _data = "Failed to load data.";
+        }
+    }
 }
