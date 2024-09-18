@@ -35,7 +35,7 @@ public class JwtAuthenticationService
             Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim("role", user.AccountType)
+                new Claim(ClaimTypes.Role, user.AccountType)
             }),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

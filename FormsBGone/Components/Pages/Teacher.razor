@@ -1,4 +1,6 @@
 ﻿@page "/teacher"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Teacher")]
 @rendermode InteractiveServer
 <h3>Teacher</h3>
 
