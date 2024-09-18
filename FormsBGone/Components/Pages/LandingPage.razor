@@ -5,7 +5,6 @@
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject JwtAuthenticationService AuthService
-@inject HttpClient _client
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <div class="landing-page">
@@ -58,6 +57,7 @@
         var jwtToken = handler.ReadJwtToken(token);
         var role = jwtToken.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
 
+
         if (role == null)
         {
             Console.WriteLine("role is null");
@@ -68,17 +68,14 @@
         {
             case "Teacher":
                 Console.WriteLine("Navigating to /teacher");
-                _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 Navigation.NavigateTo("/teacher");
                 break;
             case "Parent":
                 Console.WriteLine("Navigating to /parent");
-                _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 Navigation.NavigateTo("/parent");
                 break;
             case "Admin":
                 Console.WriteLine("Navigating to /administrator");
-                _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 Navigation.NavigateTo("/administrator");
                 break;
             default:

@@ -36,8 +36,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["BaseUrl"]) });
-
 // Add Razor Components
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
