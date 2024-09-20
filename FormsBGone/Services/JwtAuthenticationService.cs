@@ -18,7 +18,6 @@ public class JwtAuthenticationService
 
     public string Authenticate(string username, string password)
     {
-        // Validate the user credentials
         var user = _context.Accounts
             .FirstOrDefault(u => u.Username == username && u.EncryptedPassword == EncryptPassword(password));
 
@@ -27,27 +26,31 @@ public class JwtAuthenticationService
             return null; // Invalid credentials
         }
 
-        // Generate JWT token
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+
+        // Ensure that ValidIssuer and ValidAudience are set correctly here
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim("role", user.AccountType)
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim("role", user.AccountType)
             }),
             Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _configuration["Jwt:Issuer"],  // Add Issuer
+            Audience = _configuration["Jwt:Audience"]  // Add Audience
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
 
+
     private string EncryptPassword(string password)
     {
         // Implement your password encryption logic here
-        return password;
+        return password; // Placeholder
     }
 }

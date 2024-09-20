@@ -7,29 +7,16 @@
 @inject JwtAuthenticationService AuthService
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
-<div class="landing-page">
-    <div class="login-wrapper">
-        <div class="login-content">
-            <div class="logo-section">
-                <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
-            </div>
-            <form onsubmit="return false;">
-                <input type="text" placeholder="Username" @bind="Username">
-                <input type="password" placeholder="Password" @bind="Password">
-                <input type="button" class="button" value="Login" @onclick="HandleLogin">
-            </form>
-            <div class="signup">
-                <span class="signup">
-                    Don't have an account?
-                    <a href="/signup">Signup</a>
-                </span>
-            </div>
-            @if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                <div class="alert alert-danger text-center">@ErrorMessage</div>
-            }
-        </div>
-    </div>
+<div class="login-wrapper">
+    <form onsubmit="return false;">
+        <input type="text" placeholder="Username" @bind="Username" />
+        <input type="password" placeholder="Password" @bind="Password" />
+        <input type="button" value="Login" @onclick="HandleLogin" />
+    </form>
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div>@ErrorMessage</div>
+    }
 </div>
 
 @code {
@@ -42,7 +29,6 @@
         ErrorMessage = string.Empty;
 
         var token = AuthService.Authenticate(Username, Password);
-
         if (token == null)
         {
             ErrorMessage = "Invalid username or password.";
@@ -52,36 +38,31 @@
         // Store the JWT in local storage
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
 
-        // Decode the token to get the user's role
+        // Decode the token to extract the role
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
         var role = jwtToken.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
 
-
         if (role == null)
         {
-            Console.WriteLine("role is null");
+            ErrorMessage = "Role not found.";
+            return;
         }
 
         // Navigate based on the user's role
         switch (role)
         {
-            case "Teacher":
-                Console.WriteLine("Navigating to /teacher");
-                Navigation.NavigateTo("/teacher");
-                break;
             case "Parent":
-                Console.WriteLine("Navigating to /parent");
                 Navigation.NavigateTo("/parent");
                 break;
+            case "Teacher":
+                Navigation.NavigateTo("/teacher");
+                break;
             case "Admin":
-                Console.WriteLine("Navigating to /administrator");
                 Navigation.NavigateTo("/administrator");
                 break;
             default:
-                ErrorMessage = "Role not recognized." + role;
-                Console.WriteLine(ErrorMessage);
-                Console.WriteLine(role);
+                ErrorMessage = "Role not recognized.";
                 break;
         }
     }

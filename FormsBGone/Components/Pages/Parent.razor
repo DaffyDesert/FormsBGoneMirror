@@ -1,5 +1,7 @@
 ﻿@page "/parent"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Parent")]
 <h3>Parent</h3>
 
 @code {
