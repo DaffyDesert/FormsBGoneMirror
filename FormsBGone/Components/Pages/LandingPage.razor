@@ -1,97 +1,37 @@
 ﻿@page "/"
-@using FormsBGone.Services
-@using System.IdentityModel.Tokens.Jwt
-@using System.Security.Claims
+@inject IAccountService accountService
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
-@inject NavigationManager Navigation
-@inject JwtAuthenticationService AuthService
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
-<div class="landing-page">
-    <div class="login-wrapper">
-        <div class="login-content">
-            <div class="logo-section">
-                <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
-            </div>
-            <form onsubmit="return false;">
-                <input type="text" placeholder="Username" @bind="Username">
-                <input type="password" placeholder="Password" @bind="Password">
-                <input type="button" class="button" value="Login" @onclick="HandleLogin">
-            </form>
-            <div class="signup">
-                <span class="signup">
-                    Don't have an account?
-                    <a href="/signup">Signup</a>
-                </span>
-            </div>
-            @if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                <div class="alert alert-danger text-center">@ErrorMessage</div>
-            }
-        </div>
-    </div>
+<div class="login-wrapper">
+    <EditForm Model="@Login" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <input type="text" placeholder="Username" @bind="Login.Username" />
+        <input type="password" placeholder="Password" @bind="Login.Password" />
+        <input type="button" value="Login" @onclick="HandleLogin" />
+        <ValidationSummary />
+    </EditForm>
 </div>
 
 @code {
-    private string Username { get; set; }
-    private string Password { get; set; }
-    private string ErrorMessage { get; set; }
+    LoginDTO Login = new();
 
     private async Task HandleLogin()
     {
-        ErrorMessage = string.Empty;
-
-        var token = AuthService.Authenticate(Username, Password);
-
-        if (token == null)
+        LoginResponse response = await accountService.LoginAsync(Login);
+        if (!response.Flag)
         {
-            ErrorMessage = "Invalid username or password.";
+            await js.InvokeVoidAsync("alert", response.Message);
             return;
         }
 
-        // Store the JWT in local storage
-        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
 
-        // Decode the token to get the user's role
-        var handler = new JwtSecurityTokenHandler();
-        try
-        {
-            var jwtToken = handler.ReadJwtToken(token);
-            var role = jwtToken.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-
-            if (role == null)
-            {
-                Console.WriteLine("Role is null. Check token claims.");
-            }
-            else
-            {
-                // Navigate based on the user's role
-                switch (role)
-                {
-                    case "Teacher":
-                        Console.WriteLine("Navigating to /teacher");
-                        Navigation.NavigateTo("/teacher");
-                        break;
-                    case "Parent":
-                        Console.WriteLine("Navigating to /parent");
-                        Navigation.NavigateTo("/parent");
-                        break;
-                    case "Admin":
-                        Console.WriteLine("Navigating to /administrator");
-                        Navigation.NavigateTo("/administrator");
-                        break;
-                    default:
-                        ErrorMessage = $"Role '{role}' not recognized.";
-                        Console.WriteLine(ErrorMessage);
-                        break;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = "An error occurred while processing the token.";
-            Console.WriteLine($"Exception: {ex.Message}");
-        }
+        if (Constants.UserRole == "Parent") NavManager.NavigateTo("/parent", forceLoad: true);
+        if (Constants.UserRole == "Teacher") NavManager.NavigateTo("/teacher", forceLoad: true);
+        if (Constants.UserRole == "Admin") NavManager.NavigateTo("/administrator", forceLoad: true);
     }
-
 }

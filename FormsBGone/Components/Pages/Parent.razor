@@ -1,10 +1,16 @@
 ﻿@page "/parent"
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Parent")]
 @rendermode InteractiveServer
-@inject HttpClient HttpClient
+@using Microsoft.AspNetCore.Authorization
 
-<h3>Parent</h3>
+<AuthorizeView Roles="Parent">
+	<Authorized>
+		<h3>Parent</h3>
+		<p>Welcome to the Parent page</p>
+	</Authorized>
+	<NotAuthorized>
+		<p>Error 401: Unauthorized</p>
+	</NotAuthorized>
+</AuthorizeView>
 
 @code {
     private string _data;

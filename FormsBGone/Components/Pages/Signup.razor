@@ -1,9 +1,10 @@
 ﻿@page "/signup"
-@inject NavigationManager Navigation
-@inject CapstoneContext DbContext
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAccountService accountService
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
-@using FormsBGone.Model;
-@using Microsoft.EntityFrameworkCore;
 
 <div class="landing-page">
     <div class="login-wrapper">
@@ -11,25 +12,13 @@
             <div class="logo-section">
                 <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
             </div>
-
-            @if (SuccessMessageVisible)
-            {
-                <div class="alert alert-success text-center">
-                    Account created successfully! Redirecting to login...
-                </div>
-            }
-            @if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                <div class="alert alert-danger text-center">@ErrorMessage</div>
-            }
-
-            <form onsubmit="return false;">
-                <input type="text" placeholder="Email" @bind="Email">
-                <input type="text" placeholder="Username" @bind="Username">
-                <input type="password" placeholder="Password" @bind="Password">
-                <input type="password" placeholder="Confirm Password" @bind="ConfirmPassword">
+            <EditForm Model="@Register" OnValidSubmit="HandleSignup">
+                <input type="text" placeholder="Email" @bind="Register.Email">
+                <input type="text" placeholder="Username" @bind="Register.Username">
+                <input type="password" placeholder="Password" @bind="Register.Password">
+                <input type="password" placeholder="Confirm Password" @bind="Register.ConfirmPassword">
                 <button type="button" class="btn btn-primary" @onclick="HandleSignup">Sign Up</button>
-            </form>
+            </EditForm>
 
             <div class="signup">
                 <span class="signup">
@@ -42,93 +31,20 @@
 </div>
 
 @code {
-    private string Email { get; set; }
-    private string Username { get; set; }
-    private string Password { get; set; }
-    private string ConfirmPassword { get; set; }
-    private string ErrorMessage { get; set; }
-    private bool SuccessMessageVisible { get; set; }
 
-    private void HandleSignup()
+    public RegisterDTO Register = new();
+
+    private async Task HandleSignup()
     {
-        ErrorMessage = string.Empty;
-        SuccessMessageVisible = false;
-
-        var userType = FindUserTypeByEmail(Email);
-        if (userType == null)
+        RegistrationResponse response = await accountService.RegisterAsync(Register);
+        if (!response.Flag)
         {
-            ErrorMessage = "Email not found in any user records.";
+            await js.InvokeVoidAsync("alert", response.Message);
             return;
         }
+        await js.InvokeVoidAsync("alert", response.Message);
+        Register = new();
 
-        if (Password != ConfirmPassword)
-        {
-            ErrorMessage = "Passwords do not match.";
-            return;
-        }
-
-        var encryptedPassword = EncryptPassword(Password);
-
-        var account = new Account
-            {
-                Email = Email,
-                Username = Username,
-                EncryptedPassword = encryptedPassword,
-                AccountType = userType
-            };
-
-        try
-        {
-            DbContext.Accounts.Add(account);
-            DbContext.SaveChanges();
-
-            SuccessMessageVisible = true;
-
-            // Navigate to login after a short delay
-            System.Threading.Tasks.Task.Delay(2000).ContinueWith(task =>
-            {
-                Navigation.NavigateTo("/");
-            });
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Failed to create account: {ex.Message}";
-        }
-    }
-
-    private string FindUserTypeByEmail(string email)
-    {
-        foreach (var parent in DbContext.Parents)
-        {
-            if (parent.Email == email)
-            {
-                return "Parent";
-            }
-        }
-
-        foreach (var teacher in DbContext.Teachers)
-        {
-            if (teacher.Email == email)
-            {
-                return "Teacher";
-            }
-        }
-
-        foreach (var administrator in DbContext.Administrators)
-        {
-            if (administrator.Email == email)
-            {
-                return "Administrator";
-            }
-        }
-
-        return null;
-    }
-
-    private string EncryptPassword(string password)
-    {
-        string encryptedPassword = password;
-        // Implement your password encryption logic here
-        return encryptedPassword;
+        NavManager.NavigateTo("/", forceLoad: true);
     }
 }
