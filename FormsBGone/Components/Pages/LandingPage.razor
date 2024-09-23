@@ -1,24 +1,37 @@
 ﻿@page "/"
-@inject NavigationManager Navigation
+@inject IAccountService accountService
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
 
-<div class="landing-page">
-    <div class="login-wrapper">
-        <div class="login-content">
-            <div class="logo-section">
-                <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
-            </div>
-            <form action="#">
-                <input type="text" placeholder="Username">
-                <input type="password" placeholder="Password">
-                <input type="button" class="button" value="Login">
-
-            </form>
-            <div class="signup">
-                <span class="signup">
-                    Don't have an account?
-                    <a href="/signup">Signup</a>
-                </span>
-            </div>
-        </div>
-    </div>
+<div class="login-wrapper">
+    <EditForm Model="@Login" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <input type="text" placeholder="Username" @bind="Login.Username" />
+        <input type="password" placeholder="Password" @bind="Login.Password" />
+        <input type="button" value="Login" @onclick="HandleLogin" />
+        <ValidationSummary />
+    </EditForm>
 </div>
+
+@code {
+    LoginDTO Login = new();
+
+    private async Task HandleLogin()
+    {
+        LoginResponse response = await accountService.LoginAsync(Login);
+        if (!response.Flag)
+        {
+            await js.InvokeVoidAsync("alert", response.Message);
+            return;
+        }
+
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+        if (Constants.UserRole == "Parent") NavManager.NavigateTo("/parent", forceLoad: true);
+        if (Constants.UserRole == "Teacher") NavManager.NavigateTo("/teacher", forceLoad: true);
+        if (Constants.UserRole == "Admin") NavManager.NavigateTo("/administrator", forceLoad: true);
+    }
+}

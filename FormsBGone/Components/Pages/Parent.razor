@@ -1,0 +1,31 @@
+﻿@page "/parent"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@inject HttpClient client
+
+<AuthorizeView Roles="Parent">
+	<Authorized>
+		<h3>Parent</h3>
+		<p>Welcome to the Parent page</p>
+	</Authorized>
+	<NotAuthorized>
+		<p>Error 401: Unauthorized</p>
+	</NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string _data;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await client.GetAsync("api/protected-resource");
+        if (response.IsSuccessStatusCode)
+        {
+            _data = await response.Content.ReadAsStringAsync();
+        }
+        else
+        {
+            _data = "Failed to load data.";
+        }
+    }
+}
