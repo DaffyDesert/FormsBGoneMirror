@@ -113,3 +113,20 @@
         width: 100%;
     }
 }
+
+.large-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.5rem; 
+    cursor: pointer;
+    margin-top: 20px;
+    width: 90%; 
+    max-width: 500px;
+}
+
+    .large-btn:hover {
+        background-color: #0056b3;
+    }
