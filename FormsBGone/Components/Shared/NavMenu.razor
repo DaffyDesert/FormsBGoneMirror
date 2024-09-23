@@ -1,20 +1,58 @@
-﻿<body>
-    <ul>
-        <div class="nav-left">
-        <li><img src="/Images/logo.png" alt="Logo" class="logo"></li>
-        <li><span class="brand">Forms-B-Gone</span></li>
-        </div>
-        <div class="nav-right">
-        <li>
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                Home
-            </NavLink>
-        </li>
-        <li>
-            <NavLink class="nav-link" href="about">
-                About
-            </NavLink>
-        </li>
-        </div>
-    </ul>
-</body>
+﻿@inject AuthenticationStateProvider AuthStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
+
+<ul>
+    <div class="nav-left">
+    <li><img src="/Images/logo.png" alt="Logo" class="logo"></li>
+    <li><span class="brand">Forms-B-Gone</span></li>
+    </div>
+    <div class="nav-right">
+    <li>
+        <NavLink class="nav-link" href="@GetHomeLink()" Match="NavLinkMatch.All">
+            Home
+        </NavLink>
+    </li>
+    <li>
+        <NavLink class="nav-link" href="about">
+            About
+        </NavLink>
+    </li>
+    </div>
+</ul>
+
+@code {
+    private string userRole = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Parent"))
+            {
+                userRole = "Parent";
+            }
+            else if (user.IsInRole("Teacher"))
+            {
+                userRole = "Teacher";
+            }
+            else if (user.IsInRole("Admin"))
+            {
+                userRole = "Admin";
+            }
+        }
+    }
+
+    private string GetHomeLink()
+    {
+        return userRole switch
+        {
+            "Parent" => "/parent",
+            "Teacher" => "/teacher",
+            "Admin" => "/administrator",
+            _ => "/"
+        };
+    }
+}
