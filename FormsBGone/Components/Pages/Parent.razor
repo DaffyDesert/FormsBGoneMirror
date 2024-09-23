@@ -1,6 +1,7 @@
 ﻿@page "/parent"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
+@inject HttpClient client
 
 <AuthorizeView Roles="Parent">
 	<Authorized>
@@ -17,7 +18,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await HttpClient.GetAsync("api/protected-resource");
+        var response = await client.GetAsync("api/protected-resource");
         if (response.IsSuccessStatusCode)
         {
             _data = await response.Content.ReadAsStringAsync();
