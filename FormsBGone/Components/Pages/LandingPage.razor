@@ -5,14 +5,27 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
 
-<div class="login-wrapper">
-    <EditForm Model="@Login" OnValidSubmit="HandleLogin">
-        <DataAnnotationsValidator />
-        <input type="text" placeholder="Username" @bind="Login.Username" />
-        <input type="password" placeholder="Password" @bind="Login.Password" />
-        <input type="button" value="Login" @onclick="HandleLogin" />
-        <ValidationSummary />
-    </EditForm>
+<div class="landing-page">
+    <div class="login-wrapper">
+        <div class="login-content">
+            <div class="logo-section">
+                <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
+            </div>
+            <EditForm Model="@Login" OnValidSubmit="HandleLogin">
+                <input type="text" placeholder="Username" @bind="Login.Username" />
+                <input type="password" placeholder="Password" @bind="Login.Password" />
+                <button type="submit" class="btn btn-primary large-btn" @onclick="HandleLogin">Login</button>
+                <ValidationSummary />
+            </EditForm>
+
+            <div class="signup">
+                <span class="signup">
+                    Don't have an account?
+                    <a href="/signup">Sign Up</a>
+                </span>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
