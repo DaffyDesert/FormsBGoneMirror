@@ -1,8 +1,21 @@
 ﻿@page "/administrator"
-@rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Admin")]
-<h3>Administrator</h3>
+@inject IAccountService accountService
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<AuthorizeView Roles="Admin">
+	<Authorized>
+		<h3>Administrator</h3>
+		<p>Welcome to the Administrator page</p>
+	</Authorized>
+	<NotAuthorized>
+		<p>Error 401: Unauthorized</p>
+	</NotAuthorized>
+</AuthorizeView>
+
 
 @code {
 
