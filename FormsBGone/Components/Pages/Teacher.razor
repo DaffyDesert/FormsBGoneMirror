@@ -1,16 +1,8 @@
 ﻿@page "/teacher"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
-
-<AuthorizeView Roles="Teacher">
-	<Authorized>
-		<h3>Teacher</h3>
-		<p>Welcome to the Teacher page</p>
-	</Authorized>
-	<NotAuthorized>
-		<p>Error 401: Unauthorized</p>
-	</NotAuthorized>
-</AuthorizeView>
+@attribute [Authorize(Roles = "Teacher")]
+<h3>Teacher</h3>
 
 @code {
 
