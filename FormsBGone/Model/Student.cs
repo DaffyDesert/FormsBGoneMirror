@@ -15,13 +15,9 @@ public partial class Student
 
     public int Grade { get; set; }
 
-    public string ParentEmail { get; set; } = null!;
-
-    public string TeacherEmail { get; set; } = null!;
-
     public virtual ICollection<Form> Forms { get; set; } = new List<Form>();
 
-    public virtual Parent ParentEmailNavigation { get; set; } = null!;
+    public virtual ICollection<Parent> ParentEmails { get; set; } = new List<Parent>();
 
-    public virtual Teacher TeacherEmailNavigation { get; set; } = null!;
+    public virtual ICollection<Teacher> TeacherEmails { get; set; } = new List<Teacher>();
 }

@@ -17,7 +17,7 @@ public partial class Teacher
 
     public string SuperiorEmail { get; set; } = null!;
 
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
-
     public virtual Administrator SuperiorEmailNavigation { get; set; } = null!;
+
+    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }
