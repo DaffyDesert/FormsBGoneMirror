@@ -1,17 +1,29 @@
 ﻿@page "/teacher"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject HttpClient client
 
-<AuthorizeView Roles="Teacher">
-	<Authorized>
-		<h3>Teacher</h3>
-		<p>Welcome to the Teacher page</p>
-	</Authorized>
-	<NotAuthorized>
-		<p>Error 401: Unauthorized</p>
-	</NotAuthorized>
-</AuthorizeView>
+@if (Authorized)
+{
+
+    <div class="header">
+        <h1>Welcome, Teacher!</h1>
+    </div>
+}
+else
+{
+    <p>Error 401: Unauthorized</p>
+}
+
 
 @code {
+    private bool Authorized = false;
+    protected override async Task OnInitializedAsync()
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        Authorized = await customAuthProvider.IsAuthenticated("Teacher");
+    }
+    //everything else goes here for code
 
 }
