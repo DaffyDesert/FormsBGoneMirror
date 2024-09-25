@@ -272,16 +272,15 @@ else
             // Handle other assignment scenarios here - specific students/classes/teachers/etc
         }
 
-        // Uncomment when ready to save changes to the database
-        // try
-        // {
-        //     await DbContext.SaveChangesAsync();
-        // }
-        // catch (Exception ex)
-        // {
-        //     Console.WriteLine($"Error saving changes: {ex.Message}");
-        //     // Consider logging the exception
-        // }
+        try
+        {
+            await DbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving changes: {ex.Message}");
+            // Consider logging the exception
+        }
 
         // Reload files to update the list
         LoadFilesFromUploadsDirectory();
@@ -313,8 +312,7 @@ else
             Debug.WriteLine($"File Path: {studentForm.FilePath}");
             Debug.WriteLine($"Assigned Student ID: {studentForm.AssignedStudentId}\n");
 
-            // Uncomment when ready to add to the database
-            // DbContext.Forms.Add(studentForm);
+            DbContext.Forms.Add(studentForm);
         }
     }
 
