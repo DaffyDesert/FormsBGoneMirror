@@ -69,47 +69,41 @@
             <div class="modal">
                 <h2>Add New Form</h2>
                 <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
 
-                    
+                    <div class="form-group">
+                    <label for="formName">Form Name:</label>
+                    <InputText id="formName" class="custom-form-control" @bind-Value="newFile.FormName" />
+                    </div>
 
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+                    <div class="form-group">
+                    <label for="description">Short Description (Optional):</label>
+                    <InputText id="description" class="custom-form-control" @bind-Value="newFile.Description" />
+                    </div>
 
-            <div class="form-group">
-            <label for="formName">Form Name:</label>
-            <InputText id="formName" class="custom-form-control" @bind-Value="newFile.FormName" />
-            </div>
+                    <div class="form-group">
+                    <label for="expirationDate">Expiration Date:</label>
+                    <InputDate id="expirationDate" class="custom-form-control" @bind-Value="newFile.ExpirationDate" />
+                    </div>
 
-            <div class="form-group">
-            <label for="description">Short Description (Optional):</label>
-            <InputText id="description" class="custom-form-control" @bind-Value="newFile.Description" />
-            </div>
+                    <div class="form-group">
+                    <label for="pdfFile">Upload PDF:</label>
+                    <InputFile id="pdfFile" class="custom-form-control" OnChange="HandleFileSelected" />
+                    </div>
 
-            <div class="form-group">
-            <label for="expirationDate">Expiration Date:</label>
-            <InputDate id="expirationDate" class="custom-form-control" @bind-Value="newFile.ExpirationDate" />
-            </div>
+                    <div class="form-group">
+                    <label for="assignedTo">Assigned To:</label>
+                    <select id="assignedTo" class="custom-form-control" @bind="newFile.AssignedTo">
+                    <option value="">-- Select --</option>
+                    <option value="-1">All</option>
+                    </select>
+                    </div>
 
-            <div class="form-group">
-            <label for="pdfFile">Upload PDF:</label>
-            <InputFile id="pdfFile" class="custom-form-control" OnChange="HandleFileSelected" />
-            </div>
-
-            <div class="form-group">
-            <label for="assignedTo">Assigned To:</label>
-            <select id="assignedTo" class="custom-form-control" @bind="newFile.AssignedTo">
-            <option value="">-- Select --</option>
-            <option value="-1">All</option>
-            </select>
-            </div>
-
-            <div class="button-group">
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <button type="button" class="btn btn-secondary" @onclick="HideAddFileModal">Cancel</button>
-            </div>
-
-            
-
+                    <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" @onclick="HideAddFileModal">Cancel</button>
+                    </div>
                 </EditForm>
             </div>
         </div>
@@ -213,7 +207,7 @@ else
         editContext.NotifyValidationStateChanged();
     }
 
-    //may need to change the way this is done if we want the Form Name to be displayed
+    //probs need to change- instead read from Forms table? or put somewhere more secure
     private void LoadFilesFromUploadsDirectory()
     {
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -228,6 +222,7 @@ else
         }
     }
 
+    // adds file to uploads folder
     private async Task<string> SaveFileAsync(IBrowserFile file)
     {
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -297,11 +292,14 @@ else
 
     private async Task CreateFormsForAllStudents(string filePath)
     {
+        var maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
+
         var students = await DbContext.Students.ToListAsync();
         foreach (var student in students)
         {
             var studentForm = new Form
                 {
+                    FormId = ++maxFormId,
                     ShortDescription = newFile.Description,
                     ExpirationDate = newFile.ExpirationDate,
                     FilePath = filePath,

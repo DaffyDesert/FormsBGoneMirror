@@ -77,7 +77,7 @@ public partial class CapstoneContext : DbContext
             entity.ToTable("Form");
 
             entity.Property(e => e.FormId)
-                .ValueGeneratedNever()
+                .ValueGeneratedNever()      //or .ValueGeneratedOnAdd()
                 .HasColumnName("Form_ID");
             entity.Property(e => e.AssignedStudentId).HasColumnName("Assigned_Student_Id");
             entity.Property(e => e.CompletedDate).HasColumnType("datetime");
