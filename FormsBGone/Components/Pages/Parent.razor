@@ -1,31 +1,29 @@
 ﻿@page "/parent"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
 @inject HttpClient client
 
-<AuthorizeView Roles="Parent">
-	<Authorized>
-		<h3>Parent</h3>
-		<p>Welcome to the Parent page</p>
-	</Authorized>
-	<NotAuthorized>
-		<p>Error 401: Unauthorized</p>
-	</NotAuthorized>
-</AuthorizeView>
+@if (Authorized)
+{
+
+    <div class="header">
+        <h1>Welcome, Parent!</h1>
+    </div>
+}
+else
+{
+    <p>Error 401: Unauthorized</p>
+}
+
 
 @code {
-    private string _data;
-
+    private bool Authorized = false;
     protected override async Task OnInitializedAsync()
     {
-        var response = await client.GetAsync("api/protected-resource");
-        if (response.IsSuccessStatusCode)
-        {
-            _data = await response.Content.ReadAsStringAsync();
-        }
-        else
-        {
-            _data = "Failed to load data.";
-        }
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        Authorized = await customAuthProvider.IsAuthenticated("Parent");
     }
+    //everything else goes here for code
+
 }

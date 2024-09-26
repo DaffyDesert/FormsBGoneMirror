@@ -19,5 +19,7 @@ public partial class Form
 
     public string? FilePath { get; set; }
 
+    public string? FormName { get; set; }
+
     public virtual Student AssignedStudent { get; set; } = null!;
 }

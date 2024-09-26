@@ -9,6 +9,13 @@ namespace FormsBGone.States
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly ClaimsPrincipal anonymous = new(new ClaimsIdentity());
+        public async Task<bool> IsAuthenticated(string role)
+        {
+            var claim = await GetAuthenticationStateAsync();
+            var user = claim.User;
+
+            return user.IsInRole(role);
+        }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
