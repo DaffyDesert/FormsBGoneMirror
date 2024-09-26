@@ -28,7 +28,7 @@
             <div class="dropdown">
                 <button class="btn btn-dropdown">Directories</button>
                 <div class="dropdown-content">
-                    <a href="/home">Forms Directory</a>
+                    <a href="/administrator">Forms Directory</a>
                     <a href="#">Student Directory</a>
                     <a href="#">Staff Directory</a>
                 </div>
@@ -299,7 +299,6 @@ else
         editContext.NotifyValidationStateChanged();
     }
 
-    //probs need to change- instead read from Forms table? or put somewhere more secure
     private void LoadFilesFromUploadsDirectory()
     {
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -371,7 +370,6 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving changes: {ex.Message}");
-            // Consider logging the exception
         }
 
         // Reload files to update the list
@@ -428,7 +426,7 @@ else
                     FormName = formToEdit.FormName,
                     Description = formToEdit.ShortDescription,
                     ExpirationDate = formToEdit.ExpirationDate,
-                    AssignedTo = formToEdit.AssignedStudentId
+                    AssignedTo = -1 //temporaryily set to 'All'
                 };
 
             // Store the original file path for reference
@@ -446,6 +444,13 @@ else
 
     private async Task DeleteFile(FileItem file)
     {
+        // Show confirmation dialog before deleting
+        bool confirmed = await ShowDeleteConfirmation(file.Name);
+        if (!confirmed)
+        {
+            return;
+        }
+
         // Delete the file from the uploads folder
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", file.Name);
         if (File.Exists(filePath))
@@ -469,6 +474,12 @@ else
         LoadFilesFromUploadsDirectory();
     }
 
+    //shows javascript confirmation - probs will change later
+    private async Task<bool> ShowDeleteConfirmation(string fileName)
+    {
+        var confirmed = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the form '{fileName}'?");
+        return confirmed;
+    }
 
     //Checks that the expiration date is in the future
     public class FutureDateAttribute : ValidationAttribute
@@ -490,7 +501,6 @@ else
         }
     }
 
-    //may need to adjust for the form list??
     public class FileItem
     {
         public string Name { get; set; }
