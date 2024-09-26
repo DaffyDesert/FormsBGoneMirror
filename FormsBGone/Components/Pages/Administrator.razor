@@ -165,6 +165,7 @@ else
     }
     private FileModel fileToEdit;
     private bool isEditFileModalVisible = false;
+    private string originalFilePath;
 
     private bool isAddFileModalVisible = false;
     private FileModel newFile = new FileModel();
@@ -199,10 +200,17 @@ else
 
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
-        if (e.FieldIdentifier.FieldName == nameof(newFile.FormName))
+        if (editContext.Model == newFile && e.FieldIdentifier.FieldName == nameof(newFile.FormName))
         {
             messageStore.Clear(e.FieldIdentifier);
             Debug.WriteLine($"Field changed: {e.FieldIdentifier.FieldName}, New Value: {newFile.FormName}");
+            StateHasChanged();
+        }
+        // Check if editing an existing file
+        else if (editContext.Model == fileToEdit && e.FieldIdentifier.FieldName == nameof(fileToEdit.FormName))
+        {
+            messageStore.Clear(e.FieldIdentifier);
+            Debug.WriteLine($"Field changed: {e.FieldIdentifier.FieldName}, New Value: {fileToEdit.FormName}");
             StateHasChanged();
         }
     }
@@ -221,15 +229,15 @@ else
             return;
         }
 
-        // Update the file record in the database
         var formToUpdate = await DbContext.Forms
-            .FirstOrDefaultAsync(f => f.FilePath == $"/uploads/{fileToEdit.FormName}");
+            .FirstOrDefaultAsync(f => f.FilePath == originalFilePath); // Use originalFilePath
 
         if (formToUpdate != null)
         {
+            formToUpdate.FormName = fileToEdit.FormName;
             formToUpdate.ShortDescription = fileToEdit.Description;
             formToUpdate.ExpirationDate = fileToEdit.ExpirationDate;
-            formToUpdate.AssignedStudentId = fileToEdit.AssignedTo ?? -1; // Adjust based on logic
+            //formToUpdate.AssignedStudentId = fileToEdit.AssignedTo ?? -1;
 
             await DbContext.SaveChangesAsync();
 
@@ -244,7 +252,6 @@ else
         LoadFilesFromUploadsDirectory();
         isEditFileModalVisible = false;
     }
-
 
 
     private bool ValidateFile()
@@ -385,7 +392,8 @@ else
                     ExpirationDate = newFile.ExpirationDate,
                     FilePath = filePath,
                     Status = "Assigned",
-                    AssignedStudentId = student.StudentId
+                    AssignedStudentId = student.StudentId,
+                    FormName = newFile.FormName
                 };
 
             Debug.WriteLine("Creating form for all students:");
@@ -404,9 +412,9 @@ else
         // Implement sign-out logic here
     }
 
+
     private void EditFile(FileItem file)
     {
-        // Load the file data from the database
         var formToEdit = DbContext.Forms
             .FirstOrDefault(f => f.FilePath == $"/uploads/{file.Name}");
 
@@ -414,12 +422,16 @@ else
         {
             fileToEdit = new FileModel
                 {
-                    FormName = formToEdit.ShortDescription,
+                    FormName = formToEdit.FormName,
                     Description = formToEdit.ShortDescription,
                     ExpirationDate = formToEdit.ExpirationDate,
-                    AssignedTo = formToEdit.AssignedStudentId // Adjust based on your assignment logic
+                    AssignedTo = formToEdit.AssignedStudentId
                 };
 
+            // Store the original file path for reference
+            originalFilePath = formToEdit.FilePath;
+
+            editContext = new EditContext(fileToEdit);
             isEditFileModalVisible = true;
         }
         else
@@ -427,6 +439,7 @@ else
             Debug.WriteLine("File not found in the database.");
         }
     }
+    
 
     private async Task DeleteFile(FileItem file)
     {
@@ -450,7 +463,6 @@ else
             Debug.WriteLine($"Deleted {formsToDelete.Count} forms associated with {file.Name} from the database.");
         }
 
-        // Refresh the file list after deletion
         LoadFilesFromUploadsDirectory();
     }
 
