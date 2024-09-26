@@ -229,26 +229,29 @@ else
             return;
         }
 
-        var formToUpdate = await DbContext.Forms
-            .FirstOrDefaultAsync(f => f.FilePath == originalFilePath); // Use originalFilePath
+        var formsToUpdate = await DbContext.Forms
+            .Where(f => f.FilePath == originalFilePath) 
+            .ToListAsync();
 
-        if (formToUpdate != null)
+        if (formsToUpdate != null && formsToUpdate.Count > 0)
         {
-            formToUpdate.FormName = fileToEdit.FormName;
-            formToUpdate.ShortDescription = fileToEdit.Description;
-            formToUpdate.ExpirationDate = fileToEdit.ExpirationDate;
-            //formToUpdate.AssignedStudentId = fileToEdit.AssignedTo ?? -1;
+            foreach (var formToUpdate in formsToUpdate)
+            {
+                formToUpdate.FormName = fileToEdit.FormName;
+                formToUpdate.ShortDescription = fileToEdit.Description;
+                formToUpdate.ExpirationDate = fileToEdit.ExpirationDate;
 
-            await DbContext.SaveChangesAsync();
+                // Do NOT change the AssignedStudentId :(
+            }
 
-            Debug.WriteLine("File updated successfully.");
+            await DbContext.SaveChangesAsync(); 
+            Debug.WriteLine("All related forms updated successfully.");
         }
         else
         {
-            Debug.WriteLine("File not found in the database.");
+            Debug.WriteLine("No forms found to update in the database.");
         }
 
-        // Refresh the file list and close the modal
         LoadFilesFromUploadsDirectory();
         isEditFileModalVisible = false;
     }
