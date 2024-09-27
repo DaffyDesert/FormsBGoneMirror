@@ -50,6 +50,8 @@ namespace FormsBGone.Repos
             var findUser = await GetUser(model.Username);
             if (findUser == null) { return new LoginResponse(false, "User not found."); }
 
+            string EncryptedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(model.Password, 13);
+         
             // FIXME: This is using plain text passwords. Include password encryption here!!! 
             if (model.Password != findUser.EncryptedPassword) 
                 return new LoginResponse(false, "Email/Password not valid");
@@ -82,16 +84,18 @@ namespace FormsBGone.Repos
 
             if (model.Password != model.ConfirmPassword) { return new RegistrationResponse(false, "Passwords do not match."); }
 
+
             // FIXME: This is adding the account to the DB without encrypting the password. Encrypt the password here!!!
+            string PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(model.Password, 13);
             appDbContext.Accounts.Add(
                 new Account()
                 {
                     Username = model.Username,
                     Email = model.Email,
                     AccountType = role,
-                    EncryptedPassword = model.Password
+                    EncryptedPassword = PasswordHash
                 });
-
+            
             await appDbContext.SaveChangesAsync();
             return new RegistrationResponse(true, "Success");
         }
