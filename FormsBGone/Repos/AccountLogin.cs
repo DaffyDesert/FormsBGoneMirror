@@ -73,7 +73,7 @@ namespace FormsBGone.Repos
 
         public async Task<RegistrationResponse> RegisterAsync(RegisterDTO model)
         {
-            var findUser = await GetUser(model.Email);
+            var findUser = await GetUser(model.Username);
             if (findUser != null) { return new RegistrationResponse(false, "User already exists."); }
 
             var role = FindUserRole(model.Email);

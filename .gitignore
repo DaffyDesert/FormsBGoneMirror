@@ -7,6 +7,8 @@
 *.dll
 FormsBGone/bin
 FormsBGone/obj
+FormsBGoneTests/bin
+FormsBGoneTests/obj
 
 # compiled output
 /dist
