@@ -7,8 +7,11 @@ namespace FormsBGone;
 
 public partial class CapstoneContext : DbContext
 {
-    public CapstoneContext()
+    private string? ConnectionString { get; set; }
+
+    public CapstoneContext(string ConnectionString)
     {
+        this.ConnectionString = ConnectionString;
     }
 
     public CapstoneContext(DbContextOptions<CapstoneContext> options)
@@ -35,8 +38,7 @@ public partial class CapstoneContext : DbContext
     public virtual DbSet<Teacher> Teachers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=tcp:capstonebgone.database.windows.net,1433;Initial Catalog=capstone;Persist Security Info=False;User ID=Principal;Password=Password1;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+        => optionsBuilder.UseSqlServer(ConnectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
