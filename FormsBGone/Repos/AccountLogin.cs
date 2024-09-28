@@ -7,6 +7,7 @@ using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using FormsBGone.States;
+using System.Linq.Expressions;
 
 namespace FormsBGone.Repos
 {
@@ -75,29 +76,36 @@ namespace FormsBGone.Repos
 
         public async Task<RegistrationResponse> RegisterAsync(RegisterDTO model)
         {
-            var findUser = await GetUser(model.Username);
-            if (findUser != null) { return new RegistrationResponse(false, "User already exists."); }
+            try
+            {
+                var findUser = await GetUser(model.Username);
+                if (findUser != null) { return new RegistrationResponse(false, "User already exists."); }
 
-            var role = FindUserRole(model.Email);
-            if (role == "") { return new RegistrationResponse(false, "User personal info not found in our database."); }
-            else Constants.UserRole = role;
+                var role = FindUserRole(model.Email);
+                if (role == "") { return new RegistrationResponse(false, "User personal info not found in our database."); }
+                else Constants.UserRole = role;
 
-            if (model.Password != model.ConfirmPassword) { return new RegistrationResponse(false, "Passwords do not match."); }
+                if (model.Password != model.ConfirmPassword) { return new RegistrationResponse(false, "Passwords do not match."); }
 
-            string passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(model.Password, 13);
-            // FIXME: This is adding the account to the DB without encrypting the password. Encrypt the password here!!!
+                string passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(model.Password, 13);
+                // FIXME: This is adding the account to the DB without encrypting the password. Encrypt the password here!!!
 
-            appDbContext.Accounts.Add(
-                new Account()
-                {
-                    Username = model.Username,
-                    Email = model.Email,
-                    AccountType = role,
-                    EncryptedPassword = passwordHash
-                });
-            
-            await appDbContext.SaveChangesAsync();
-            return new RegistrationResponse(true, "Success");
+                appDbContext.Accounts.Add(
+                    new Account()
+                    {
+                        Username = model.Username,
+                        Email = model.Email,
+                        AccountType = role,
+                        EncryptedPassword = passwordHash
+                    });
+
+                await appDbContext.SaveChangesAsync();
+                return new RegistrationResponse(true, "Success");
+            }
+            catch (Exception ex)
+            {
+                return new RegistrationResponse(false, ex.ToString());
+            }
         }
 
 		public LoginResponse RefreshToken(UserSession userSession)

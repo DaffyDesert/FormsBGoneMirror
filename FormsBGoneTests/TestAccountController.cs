@@ -9,20 +9,33 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using static FormsBGone.Responses.CustomResponses;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FormsBGoneTests
 {
 	[TestClass]
 	public class TestAccountController
 	{
-		private static WebApplicationBuilder builder = WebApplication.CreateBuilder();
-		private static CapstoneContext context = new CapstoneContext(builder.Configuration.GetConnectionString("DefaultConnection")!);
-		private static IAccountLogin repo = new AccountLogin(context, builder.Configuration);
-		private static AccountController controller = new(repo);
+		private static WebApplicationBuilder builder;
+		private static CapstoneContext context;
+		private static AccountController controller;
+
+		private static void SetUp()
+		{
+			builder = WebApplication.CreateBuilder();
+			builder.Services.AddDbContext<CapstoneContext>(options =>
+			{
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+			});
+			context = builder.Build().Services.GetService<CapstoneContext>();
+			IAccountLogin repo = new AccountLogin(context, builder.Configuration);
+			controller = new(repo);
+		}
 
 		[TestMethod]
 		public async Task TestLogin()
 		{
+			SetUp();
 			LoginDTO login1 = new()
 			{
 				Username = "ThisIsNotARealUsername",
@@ -60,6 +73,7 @@ namespace FormsBGoneTests
 		[TestMethod]
 		public async Task TestRegister()
 		{
+			SetUp();
 			Parent newParent = new()
 			{
 				Email = "TestRegister@TestAccountController.cs",
