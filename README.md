@@ -1,10 +1,26 @@
-# Project Title
+# Project Title: Forms-B-Gone
 
-Simple overview of use/purpose.
+> The goal of this application is to simplify the management of school-related forms. By moving the process online, parents can easily complete and submit forms, teachers can track form completion, and administrators can effectively manage the documents and user permissions, reducing paperwork and improving efficiency.
 
-## Description
+## Team Members & Roles
 
-An in-depth paragraph about your project and overview of use.
+* **Tim Albert:** Security Lead
+* **Alex DeAngelis:** Team Lead & Testing Lead
+* **Julianne Montague:** SE Lead & Project Coordinator
+* **Trent Wells:** Coding Lead
+
+## Features by User Role
+
+### Administrator
+* <span style="color: green;">(Complete)</span> **Form Management:** Full CRUD operations over school documents.
+* <span style="color: red;">(Not Started)</span> **Student/Staff Management:** Manage student and teacher access levels with full CRUD operations.
+
+### Teacher
+* <span style="color: red;">(Not Started)</span> **View Form Status:** View the completion status of student forms, with the ability to filter students by class or search by name for easier management.
+* <span style="color: red;">(Not Started)</span> **Specialized Form Request** ***(Optional):*** Request special forms (e.g., field trip or movie forms) with admin approval required.
+
+### Parent
+* <span style="color: red;">(Not Started)</span> **Fill in Forms:** Log in, view, and complete forms for their children online. 
 
 ## Getting Started
 
@@ -25,33 +41,10 @@ An in-depth paragraph about your project and overview of use.
 code blocks for commands
 ```
 
-## Help
+## Testing Instructions
 
-Any advice for common problems or issues.
-```
-command to run if program contains helper info
-```
+* Include command line instructions
 
-## Authors
+## Demonstration Video
 
-Contributors names and contact info
-
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
-
-## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
+[Watch the demo video of Sprint 1](https://youtu.be/IM8LEjR_4o4)
