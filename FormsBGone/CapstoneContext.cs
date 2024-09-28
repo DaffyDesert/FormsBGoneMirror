@@ -7,12 +7,9 @@ namespace FormsBGone;
 
 public partial class CapstoneContext : DbContext
 {
-    private string? ConnectionString { get; set; }
-
-    public CapstoneContext(string ConnectionString)
-    {
-        this.ConnectionString = ConnectionString;
-    }
+	public CapstoneContext()
+	{
+	}
 
     public CapstoneContext(DbContextOptions<CapstoneContext> options)
         : base(options)
@@ -36,9 +33,6 @@ public partial class CapstoneContext : DbContext
     public virtual DbSet<Student> Students { get; set; }
 
     public virtual DbSet<Teacher> Teachers { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(ConnectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
