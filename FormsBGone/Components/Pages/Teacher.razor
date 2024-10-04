@@ -1,29 +1,198 @@
 ﻿@page "/teacher"
-@rendermode InteractiveServer
+
 @using Microsoft.AspNetCore.Authorization
+@using FormsBGone.Model;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.AspNetCore.Components.Web;
+@using System.Threading.Tasks;
+@using System.Security.Claims
+
+@rendermode InteractiveServer
+@inject CapstoneContext DbContext
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavManager
 @inject HttpClient client
 
 @if (Authorized)
 {
-
     <div class="header">
-        <h1>Welcome, Teacher!</h1>
+        <h1>Welcome, @($"{currentTeacher?.FirstName} {currentTeacher?.LastName}")!</h1>
+        <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
     </div>
+
+    <hr />
+
+    <div class="header-container">
+        <div class="student-directory">
+            <h2>Student Directory</h2>
+        </div>
+
+        <div class="search-container">
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+
+            <!-- Filter Dropdown -->
+            <!--
+            <div class="filter-dropdown">
+                <select @onchange="OnFilterChange">
+                    <option value="">All</option>
+                    <option value="GradeA">Grade A</option>
+                    <option value="GradeB">Grade B</option>
+                    <option value="GradeC">Grade C</option>
+                </select>
+            </div>
+            --> 
+        </div>
+    </div>
+
+    @if (students.Any())
+    {
+        <ul class="student-list">
+            @foreach (var student in filteredStudentList)
+            {
+                <li>@($"{student.FirstName} {student.LastName}")</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="no-students">
+            <p>No students found.</p>
+        </div>
+    }
 }
 else
 {
     <p>Error 401: Unauthorized</p>
 }
 
-
 @code {
     private bool Authorized = false;
+    private string searchQuery = string.Empty;
+    private string selectedFilter = string.Empty;
+
+    private TeacherInfo currentTeacher;
+
+    private List<Student> students = new List<Student>();
+    private List<Student> filteredStudentList = new();
+
     protected override async Task OnInitializedAsync()
     {
         var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
         Authorized = await customAuthProvider.IsAuthenticated("Teacher");
-    }
-    //everything else goes here for code
 
+        if (Authorized)
+        {
+            try
+            {
+                currentTeacher = await GetCurrentTeacherDetails(); // Get the TeacherInfo
+                if (currentTeacher != null)
+                {
+                    // await LoadStudentDirectory(); // Load students based on teacher email
+                    filteredStudentList = students; // Initial load shows all students
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving teacher data: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task<TeacherInfo> GetCurrentTeacherDetails()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                var teacher = await DbContext.Teachers
+                    .FirstOrDefaultAsync(t => t.Email == email);
+
+                if (teacher != null)
+                {
+                    return new TeacherInfo
+                        {
+                            Email = teacher.Email,
+                            TeacherId = teacher.TeacherId,
+                            FirstName = teacher.FirstName,
+                            LastName = teacher.LastName,
+                            MiddleInitial = teacher.MiddleInitial,
+                            SuperiorEmail = teacher.SuperiorEmail
+                        };
+                }
+            }
+        }
+
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    // private async Task LoadStudentDirectory()
+    // {
+    //     // Load students assigned to the teacher based on Teacher_Email
+    //     students = await DbContext.Students
+    //         .Join(DbContext.TeacherStudent,
+    //               student => student.StudentId,
+    //               teacherStudent => teacherStudent.Student_Id,
+    //               (student, teacherStudent) => new { student, teacherStudent })
+    //         .Where(x => x.teacherStudent.Teacher_Email == currentTeacher.Email)
+    //         .Select(x => x.student) 
+    //         .ToListAsync();
+    // }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        // FilterStudents();
+    }
+
+    // private void FilterStudents()
+    // {
+    //     // Filter the student list based on the current search query and selected filter
+    //     filteredStudentList = students
+    //         .Where(s => string.IsNullOrEmpty(searchQuery) ||
+    //                     $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+    //         .Where(s => string.IsNullOrEmpty(selectedFilter) || s.Grade == selectedFilter)
+    //         .ToList();
+    // }
+
+    private void OnFilterChange(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value.ToString();
+        // FilterStudents();
+    }
+
+    private void SignOut()
+    {
+        // Implement sign-out logic here
+        NavManager.NavigateTo("/logout", true);
+    }
+
+    public class TeacherInfo
+    {
+        public string Email { get; set; }
+        public int TeacherId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string MiddleInitial { get; set; }
+        public string SuperiorEmail { get; set; }
+    }
+
+    public class Student
+    {
+        public int StudentId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string MiddleInitial { get; set; }
+        public int Grade { get; set; }
+        public int AssignedTeacherId { get; set; }
+    }
 }

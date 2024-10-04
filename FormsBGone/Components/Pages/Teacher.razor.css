@@ -1,0 +1,143 @@
+﻿/* General Styles */
+body {
+    padding-right: 40px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9fb; /* Lighter background for teachers */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 40px;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #004080; /* Slightly different dark blue for teachers */
+}
+
+/* Button Styles */
+.btn-signout {
+    background-color: #5a6268; /* Gray for sign-out button */
+    color: white;
+    padding: 10px 25px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    .btn-signout:hover {
+        background-color: #4e555b; /* Darker gray on hover */
+    }
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 50px 20px 80px;
+}
+
+.student-directory h2 {
+    font-size: 2.5rem; /* Larger heading */
+    font-weight: bold;
+    color: #003366; /* Dark blue */
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Search Bar Styles */
+.search-bar {
+    display: flex;
+    justify-content: flex-end; /* Align items to the end (right) */
+    margin: 0; /* Remove extra margin */
+    margin-right: 10px; /* Adjusted margin to be more compact */
+}
+
+    .search-bar input[type="text"] {
+        width: 300px;
+        padding: 10px 15px;
+        font-size: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 5px; /* Reduced margin for closeness */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        .search-bar input[type="text"]:focus {
+            outline: none;
+            border-color: #004080; /* Highlight the border on focus */
+        }
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    display: inline-block;
+    position: relative;
+    margin-left: 0; /* Removed margin to keep close to the search bar */
+}
+
+    .filter-dropdown select {
+        padding: 10px;
+        font-size: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+        .filter-dropdown select:focus {
+            outline: none;
+            border-color: #004080; /* Highlight the border on focus */
+        }
+
+.no-students {
+    display: flex; /* Enable Flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    margin: 20px auto; /* Center the div */
+    padding: 15px; /* Add some padding */
+    width: 300px; /* Set a specific width */
+    height: 100px; /* Set a specific height to enable vertical centering */
+    text-align: center; /* Center the text */
+    background-color: #fff; /* White background */
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    font-size: 24px; /* Larger font size */
+    color: #505050; /* Darker gray color */
+}
+
+/* Student List Styles */
+.student-list {
+    list-style-type: none;
+    margin: 30px 50px 20px 80px;
+    padding: 0; /* Remove default padding */
+}
+
+    .student-list li {
+        font-size: 20px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
