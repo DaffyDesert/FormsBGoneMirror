@@ -54,7 +54,10 @@
         <ul class="student-list">
             @foreach (var student in filteredStudentList)
             {
-                <li>@($"{student.FirstName} {student.LastName}")</li>
+                <li class="student-item">
+                    <span>@($"{student.FirstName} {student.LastName}")</span>
+                    <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(student.StudentId)">View Forms</button>
+                </li>
             }
         </ul>
     }
@@ -62,6 +65,31 @@
     {
         <div class="no-students">
             <p>No students found.</p>
+        </div>
+    }
+
+    @if (isViewFormsModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3>Form Directory: @selectedStudent?.FirstName @selectedStudent?.LastName </h3>
+                @if (selectedStudentForms?.Any() == true)
+                {
+                    <ul class="form-list">
+                        @foreach (var form in selectedStudentForms)
+                        {
+                            <li><strong>@form.FormName</strong> - Status: @form.Status</li>
+                        }
+                    </ul>
+                }
+                else if (selectedStudent != null)
+                {
+                    <div class="no-forms">
+                        <p>No forms found for @selectedStudent.FirstName @selectedStudent.LastName.</p>
+                    </div>
+                }
+                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
+            </div>
         </div>
     }
 }
@@ -72,13 +100,16 @@ else
 
 @code {
     private bool Authorized = false;
+    private bool isViewFormsModalVisible = false;
     private string searchQuery = string.Empty;
     private string selectedFilter = string.Empty;
+    private Teacher currentTeacher;
 
-    private TeacherInfo currentTeacher;
-
-    private List<Student> students = new List<Student>();
+    private List<Student> students = new();
     private List<Student> filteredStudentList = new();
+    private List<Form> selectedStudentForms = new();
+
+    private Student selectedStudent;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,10 +120,10 @@ else
         {
             try
             {
-                currentTeacher = await GetCurrentTeacherDetails(); // Get the TeacherInfo
+                currentTeacher = await GetCurrentTeacherDetails();
                 if (currentTeacher != null)
                 {
-                    // await LoadStudentDirectory(); // Load students based on teacher email
+                    students = currentTeacher.Students.ToList(); // Fetch students assigned to this teacher
                     filteredStudentList = students; // Initial load shows all students
                 }
             }
@@ -103,7 +134,20 @@ else
         }
     }
 
-    private async Task<TeacherInfo> GetCurrentTeacherDetails()
+    private async Task ShowViewFormsModal(int studentId)
+    {
+        await LoadStudentForms(studentId); // Load forms for the selected student
+        isViewFormsModalVisible = true;     // Show the modal after loading the forms
+    }
+
+    private void HideViewFormsModal()
+    {
+        isViewFormsModalVisible = false;
+        selectedStudentForms.Clear(); // Clear the forms list when closing the modal
+        selectedStudent = null;        // Clear the selected student
+    }
+
+    private async Task<Teacher> GetCurrentTeacherDetails()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -114,39 +158,26 @@ else
 
             if (!string.IsNullOrEmpty(email))
             {
-                var teacher = await DbContext.Teachers
+                return await DbContext.Teachers
+                    .Include(t => t.Students) 
                     .FirstOrDefaultAsync(t => t.Email == email);
-
-                if (teacher != null)
-                {
-                    return new TeacherInfo
-                        {
-                            Email = teacher.Email,
-                            TeacherId = teacher.TeacherId,
-                            FirstName = teacher.FirstName,
-                            LastName = teacher.LastName,
-                            MiddleInitial = teacher.MiddleInitial,
-                            SuperiorEmail = teacher.SuperiorEmail
-                        };
-                }
             }
         }
 
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
-    // private async Task LoadStudentDirectory()
-    // {
-    //     // Load students assigned to the teacher based on Teacher_Email
-    //     students = await DbContext.Students
-    //         .Join(DbContext.TeacherStudent,
-    //               student => student.StudentId,
-    //               teacherStudent => teacherStudent.Student_Id,
-    //               (student, teacherStudent) => new { student, teacherStudent })
-    //         .Where(x => x.teacherStudent.Teacher_Email == currentTeacher.Email)
-    //         .Select(x => x.student) 
-    //         .ToListAsync();
-    // }
+    private async Task LoadStudentForms(int studentId)
+    {
+        selectedStudent = students.FirstOrDefault(s => s.StudentId == studentId);
+
+        if (selectedStudent != null)
+        {
+            selectedStudentForms = await DbContext.Forms
+                .Where(f => f.AssignedStudentId == studentId)
+                .ToListAsync();
+        }
+    }
 
     private void OnSearchInput(ChangeEventArgs e)
     {
@@ -174,25 +205,5 @@ else
     {
         // Implement sign-out logic here
         NavManager.NavigateTo("/logout", true);
-    }
-
-    public class TeacherInfo
-    {
-        public string Email { get; set; }
-        public int TeacherId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string MiddleInitial { get; set; }
-        public string SuperiorEmail { get; set; }
-    }
-
-    public class Student
-    {
-        public int StudentId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string MiddleInitial { get; set; }
-        public int Grade { get; set; }
-        public int AssignedTeacherId { get; set; }
     }
 }

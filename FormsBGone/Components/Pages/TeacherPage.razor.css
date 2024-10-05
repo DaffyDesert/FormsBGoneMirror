@@ -18,12 +18,18 @@ h1 {
     color: #004080; /* Slightly different dark blue for teachers */
 }
 
+h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #092daa;
+}
+
 /* Button Styles */
 .btn-signout {
     background-color: #5a6268; /* Gray for sign-out button */
     color: white;
     padding: 10px 25px;
-    font-size: 18px;
+    font-size: 20px;
     border-radius: 5px;
     cursor: pointer;
 }
@@ -112,22 +118,125 @@ h1 {
     color: #505050; /* Darker gray color */
 }
 
-/* Student List Styles */
 .student-list {
     list-style-type: none;
+    padding: 0;
     margin: 30px 50px 20px 80px;
-    padding: 0; /* Remove default padding */
 }
 
-    .student-list li {
-        font-size: 20px;
+    .student-item {
+        display: flex;
+        justify-content: space-between; /* Align items to the sides */
+        align-items: center; /* Center items vertically */
+        font-size: 22px;
         padding: 10px;
-        margin-bottom: 10px;
+        border-bottom: 1px solid #ccc; /* Optional: Adds a separator between items */
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        height: 60px; /* Match the header height */
+        transition: background-color 0.3s ease;
+    }
+
+        .student-item:hover {
+            background-color: #f0f8ff; /* Light blue on hover */
+        }
+
+.btn-view-forms {
+    background-color: #004080;
+    color: white;
+    border: none;
+    font-size: 18px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+    .btn-view-forms:hover {
+        background-color: #002a60;
+    }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    display: block;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 8px; /* Rounded corners for a softer look */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
+    padding: 30px; /* Increased padding for a spacious feel */
+    width: 90%;
+    max-width: 1100px; /* Maximum width for larger screens */
+    max-height: 50vh; /* Increased height for better content visibility */
+    overflow-y: auto; /* Ensure content is scrollable if needed */
+    animation: fadeIn 0.3s ease-out; /* Fade-in animation */
+}
+
+.btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333; /* Darker color for visibility */
+    cursor: pointer; /* Pointer cursor */
+    transition: color 0.3s ease; /* Smooth color transition */
+}
+
+    .btn-close:hover {
+        color: #000; /* Darker color on hover */
+    }
+
+/* Form List Styles */
+.form-list {
+    list-style-type: none; /* Remove bullets */
+    padding: 0; /* Remove padding */
+    margin: 20px 0; /* Add some spacing */
+}
+
+    .form-list li {
+        font-size: 20px; /* Adjust font size */
+        padding: 10px;
+        margin-bottom: 8px;
         background-color: #ffffff;
         border: 1px solid #ddd;
         border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+        color: #333; /* Text color */
+        transition: background-color 0.3s ease; /* Smooth transition on hover */
     }
+
+        .form-list li:hover {
+            background-color: #f0f8ff; /* Light blue on hover */
+        }
+
+/* No Forms Message */
+.no-forms {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    padding: 20px;
+    background-color: #fefefe; /* White background */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+    color: #505050; /* Darker text color */
+    margin: 20px auto; /* Center horizontally with margins */
+    font-size: 20px; /* Adjust font size */
+    width: 400px; /* Set a specific width */
+    text-align: center; /* Center the text */
+}
+
 
 /* Animation */
 @keyframes fadeIn {
