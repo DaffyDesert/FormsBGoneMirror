@@ -49,6 +49,13 @@ namespace FormsBGone.States
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
 
+        public async Task Logout()
+        {
+            Constants.JWTToken = null!;
+
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymous)));
+        }
+
         public static ClaimsPrincipal SetClaimPrincipal(CustomUserClaims claims)
         {
             if (claims.Email is null) return new ClaimsPrincipal();

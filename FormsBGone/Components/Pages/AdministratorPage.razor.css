@@ -2,7 +2,7 @@
 body {
     padding-right: 40px;
     font-family: 'Arial', sans-serif;
-    background-color: #f4f7f9; /* Light gray background for a clean look */
+    background-color: #f4f7f9; /* Light gray */
 }
 
 .header {
@@ -13,7 +13,7 @@ body {
 }
 
 h1 {
-    font-size: 3rem; /* Larger header */
+    font-size: 3rem; 
     font-weight: bold;
     color: #003366; /* Dark blue */
 }
@@ -27,39 +27,39 @@ h1 {
 .btn-dropdown, .btn-signout {
     height: 50px;
     color: white;
-    padding: 0 25px; /* Increased padding */
+    padding: 0 25px; 
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px; /* Larger font size */
+    font-size: 18px; 
     border-radius: 4px;
 }
 
 .btn-dropdown {
-    background-color: #007bff; /* Blue color for dropdown button */
+    background-color: #007bff; /* Blue */
 }
 
 .btn-signout {
-    background-color: #6c757d; /* Unique color for sign-out button */
+    background-color: #6c757d; /* Dark gray */
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #ffffff; /* White background for dropdown */
-    min-width: 200px; /* Increased width to fit longer text */
+    background-color: #ffffff; /* White background*/
+    min-width: 200px; 
     box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
     z-index: 1;
 }
 
     .dropdown-content a {
         color: #003366; /* Dark blue text */
-        padding: 15px 20px; /* Increased padding */
+        padding: 15px 20px; 
         text-decoration: none;
         display: block;
-        font-size: 16px; /* Larger font size for dropdown items */
+        font-size: 16px; 
     }
 
         .dropdown-content a:hover {
@@ -74,11 +74,10 @@ h1 {
     background-color: #0056b3; /* Darker blue on hover */
 }
 
-/* Align Dropdown and Sign-Out Button */
 .header-right {
     display: flex;
     align-items: center;
-    gap: 20px; /* Space between dropdown and sign-out button */
+    gap: 20px; 
 }
 
 /* Header Container Styles */
@@ -90,15 +89,15 @@ h1 {
 }
 
 .forms-directory h2 {
-    font-size: 2.5rem; /* Larger heading */
+    font-size: 2.5rem; 
     font-weight: bold;
     color: #003366; /* Dark blue */
 }
 
 .add-file-btn .btn-primary {
     background-color: #17a2b8; /* Light blue/teal */
-    font-size: 18px; /* Larger font size */
-    padding: 12px 20px; /* Increased padding */
+    font-size: 18px; 
+    padding: 12px 20px; 
 }
 
 /* File List Styles */
@@ -130,17 +129,17 @@ h1 {
         }
 
 .file-item-buttons button {
-    margin-left: 10px; /* Increased spacing */
-    font-size: 16px; /* Larger font size for buttons */
-    padding: 10px 15px; /* Increased padding */
+    margin-left: 10px; 
+    font-size: 16px; 
+    padding: 10px 15px; 
 }
 
 button {
     cursor: pointer;
     color: white;
     border: none;
-    font-size: 16px; /* Larger font size */
-    padding: 12px 20px; /* Increased padding */
+    font-size: 16px; 
+    padding: 12px 20px; 
     border-radius: 4px; /* Rounded corners */
 }
 
@@ -178,26 +177,26 @@ button {
     display: block;
     position: relative;
     background-color: #ffffff;
-    border-radius: 8px; /* Rounded corners for a softer look */
+    border-radius: 8px; /* Rounded corners */
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
-    padding: 30px; /* Increased padding for a spacious feel */
+    padding: 30px; 
     width: 90%;
-    max-width: 700px; /* Maximum width for larger screens */
-    max-height: 70vh; /* Increased height for better content visibility */
+    max-width: 700px; 
+    max-height: 70vh; 
     overflow-y: auto; /* Ensure content is scrollable if needed */
     animation: fadeIn 0.3s ease-out; /* Fade-in animation */
 }
 
     .modal h2 {
-        font-size: 2.5rem; /* Adjust heading size */
-        color: #003366; /* Dark blue for consistency */
-        margin-bottom: 20px; /* Space below heading */
-        text-align: center; /* Center the heading */
+        font-size: 2.5rem;
+        color: #003366; /* Dark blue */
+        margin-bottom: 20px; 
+        text-align: center;
     }
 
 .form-group {
     display: flex;
-    flex-direction: column; /* Stack label and input vertically */
+    flex-direction: column;
     margin-bottom: 20px;
     font-size: 20px;
 }
@@ -206,8 +205,8 @@ button {
         display: block;
         font-size: 20px;
         font-weight: bold;
-        margin-bottom: 8px; /* Space between label and input */
-        color: #333; /* Darker text color for better readability */
+        margin-bottom: 8px; 
+        color: #333; 
     }
 
 .custom-form-control {
@@ -216,21 +215,53 @@ button {
     box-sizing: border-box;
 }
 
-/* Center Buttons in Modal */
+/* Modal Styles */
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-modal {
+    display: block;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 8px; /* Rounded corners*/
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
+    padding: 30px; 
+    width: 90%;
+    max-width: 700px; 
+    max-height: 70vh; 
+    overflow-y: auto; /* Ensure content is scrollable if needed */
+    animation: fadeIn 0.3s ease-out; /* Fade-in animation */
+}
+
+    .confirm-modal p {
+        font-size: 20px; 
+    }
+
+/* Center Buttons in Modal */ 
 .button-group {
     display: flex;
-    justify-content: center; /* Center buttons horizontally */
-    gap: 100px; /* Space between buttons */
-    margin-top: 20px; /* Space above button group */
+    justify-content: center; 
+    gap: 100px; 
+    margin-top: 20px; 
 }
 
 /* General Button Styling */
 .modal .btn-primary, .modal .btn-secondary {
-    font-size: 20px; /* Larger font size */
-    padding: 12px 24px; /* Increased padding */
+    font-size: 20px; 
+    padding: 12px 24px;
     border-radius: 4px; /* Rounded corners */
-    border: none; /* Remove border */
-    cursor: pointer; /* Pointer cursor */
+    border: none; 
+    cursor: pointer; 
     transition: background-color 0.3s ease; /* Smooth transition */
 }
 

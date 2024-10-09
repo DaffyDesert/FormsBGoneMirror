@@ -59,9 +59,9 @@ h3 {
 /* Search Bar Styles */
 .search-bar {
     display: flex;
-    justify-content: flex-end; /* Align items to the end (right) */
-    margin: 0; /* Remove extra margin */
-    margin-right: 10px; /* Adjusted margin to be more compact */
+    justify-content: flex-end; 
+    margin: 0; 
+    margin-right: 10px; 
 }
 
     .search-bar input[type="text"] {
@@ -70,20 +70,20 @@ h3 {
         font-size: 20px;
         border: 1px solid #ddd;
         border-radius: 5px;
-        margin-right: 5px; /* Reduced margin for closeness */
+        margin-right: 5px; 
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
         .search-bar input[type="text"]:focus {
             outline: none;
-            border-color: #004080; /* Highlight the border on focus */
+            border-color: #004080; 
         }
 
 /* Filter Dropdown Styles */
 .filter-dropdown {
     display: inline-block;
     position: relative;
-    margin-left: 0; /* Removed margin to keep close to the search bar */
+    margin-left: 0; 
 }
 
     .filter-dropdown select {
@@ -98,23 +98,23 @@ h3 {
 
         .filter-dropdown select:focus {
             outline: none;
-            border-color: #004080; /* Highlight the border on focus */
+            border-color: #004080; 
         }
 
 .no-students {
-    display: flex; /* Enable Flexbox */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    margin: 20px auto; /* Center the div */
-    padding: 15px; /* Add some padding */
-    width: 300px; /* Set a specific width */
-    height: 100px; /* Set a specific height to enable vertical centering */
-    text-align: center; /* Center the text */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    margin: 20px auto; 
+    padding: 15px; 
+    width: 300px; 
+    height: 100px; 
+    text-align: center; 
     background-color: #fff; /* White background */
     border: 1px solid #ddd; /* Light gray border */
     border-radius: 5px; /* Rounded corners */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    font-size: 24px; /* Larger font size */
+    font-size: 24px; 
     color: #505050; /* Darker gray color */
 }
 
@@ -126,14 +126,14 @@ h3 {
 
     .student-item {
         display: flex;
-        justify-content: space-between; /* Align items to the sides */
-        align-items: center; /* Center items vertically */
+        justify-content: space-between; 
+        align-items: center;
         font-size: 22px;
         padding: 10px;
-        border-bottom: 1px solid #ccc; /* Optional: Adds a separator between items */
+        border-bottom: 1px solid #ccc; 
         border-radius: 5px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        height: 60px; /* Match the header height */
+        height: 60px; 
         transition: background-color 0.3s ease;
     }
 
@@ -172,12 +172,12 @@ h3 {
     display: block;
     position: relative;
     background-color: #ffffff;
-    border-radius: 8px; /* Rounded corners for a softer look */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
-    padding: 30px; /* Increased padding for a spacious feel */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); 
+    padding: 30px; 
     width: 90%;
-    max-width: 1100px; /* Maximum width for larger screens */
-    max-height: 50vh; /* Increased height for better content visibility */
+    max-width: 1100px; 
+    max-height: 50vh; 
     overflow-y: auto; /* Ensure content is scrollable if needed */
     animation: fadeIn 0.3s ease-out; /* Fade-in animation */
 }
@@ -189,7 +189,7 @@ h3 {
     font-size: 24px;
     font-weight: bold;
     color: #333; /* Darker color for visibility */
-    cursor: pointer; /* Pointer cursor */
+    cursor: pointer; 
     transition: color 0.3s ease; /* Smooth color transition */
 }
 
@@ -199,13 +199,16 @@ h3 {
 
 /* Form List Styles */
 .form-list {
-    list-style-type: none; /* Remove bullets */
-    padding: 0; /* Remove padding */
-    margin: 20px 0; /* Add some spacing */
+    list-style-type: none; 
+    padding: 0; 
+    margin: 20px 0; 
 }
 
-    .form-list li {
-        font-size: 20px; /* Adjust font size */
+    .form-item {
+        display: flex;
+        justify-content: space-between; 
+        align-items: center; 
+        font-size: 20px; 
         padding: 10px;
         margin-bottom: 8px;
         background-color: #ffffff;
@@ -216,25 +219,53 @@ h3 {
         transition: background-color 0.3s ease; /* Smooth transition on hover */
     }
 
-        .form-list li:hover {
+        .form-item:hover {
             background-color: #f0f8ff; /* Light blue on hover */
         }
+
+    .status-box {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        min-width: 100px;
+        display: inline-block; 
+        color: white; 
+    }
+
+    /* Status Colors */
+    .status-assigned {
+        background-color: #808080; /* Grey for Assigned */
+    }
+
+    .status-not-reviewed {
+        background-color: #ff0000; /* Red for Not Reviewed */
+    }
+
+    .status-complete {
+        background-color: #008000; /* Green for Complete */
+    }
+
+    .status-unknown {
+        background-color: #cccccc; /* Light grey for unknown statuses */
+        color: black;
+    }
 
 /* No Forms Message */
 .no-forms {
     display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
+    justify-content: center; 
+    align-items: center;
     padding: 20px;
     background-color: #fefefe; /* White background */
     border: 1px solid #ddd; /* Light border */
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
     color: #505050; /* Darker text color */
-    margin: 20px auto; /* Center horizontally with margins */
-    font-size: 20px; /* Adjust font size */
-    width: 400px; /* Set a specific width */
-    text-align: center; /* Center the text */
+    margin: 20px auto; 
+    font-size: 20px; 
+    width: 400px; 
+    text-align: center; 
 }
 
 
