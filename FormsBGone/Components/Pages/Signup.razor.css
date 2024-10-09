@@ -114,6 +114,23 @@
             text-decoration: underline;
         }
 
+.alert {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Center vertically */
+    background-color: rgba(220, 53, 69, 0.1); /* Light red background */
+    color: #dc3545; /* Red text color */
+    font-size: 1.2rem; /* Text size */
+    padding: 15px;
+    margin: 20px auto; /* Center the alert horizontally */
+    border: 1px solid #dc3545; /* Border matching text color */
+    border-radius: 4px;
+    width: 90%; /* Full width of the container */
+    max-width: 500px; /* Limit maximum width */
+    text-align: center; /* Center text inside the box */
+    position: relative; /* For positioning the close button */
+}
+
 @media (max-width: 768px) {
     .login-wrapper {
         flex-direction: column;

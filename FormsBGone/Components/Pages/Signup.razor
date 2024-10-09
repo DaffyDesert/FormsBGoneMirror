@@ -12,6 +12,14 @@
             <div class="logo-section">
                 <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
             </div>
+
+            @if (!string.IsNullOrEmpty(AlertMessage))
+            {
+                <div class="alert">
+                    @AlertMessage
+                </div>
+            }
+
             <EditForm Model="@Register" OnValidSubmit="HandleSignup">
                 <input type="text" placeholder="Email" @bind="Register.Email">
                 <input type="text" placeholder="Username" @bind="Register.Username">
@@ -31,20 +39,33 @@
 </div>
 
 @code {
-
     public RegisterDTO Register = new();
+    public string AlertMessage { get; set; }
 
     private async Task HandleSignup()
     {
-        RegistrationResponse response = await accountService.RegisterAsync(Register);
-        if (!response.Flag)
+        // Check if any of the fields are empty
+        if (string.IsNullOrWhiteSpace(Register.Email) ||
+            string.IsNullOrWhiteSpace(Register.Username) ||
+            string.IsNullOrWhiteSpace(Register.Password) ||
+            string.IsNullOrWhiteSpace(Register.ConfirmPassword))
         {
-            await js.InvokeVoidAsync("alert", response.Message);
-            return;
+            AlertMessage = "All fields are required."; // Set alert message
+            return; 
         }
-        await js.InvokeVoidAsync("alert", response.Message);
-        Register = new();
 
-        NavManager.NavigateTo("/", forceLoad: true);
+        // Call registration service
+        RegistrationResponse response = await accountService.RegisterAsync(Register);
+
+        // Log the response message to the console
+        Console.WriteLine($"Response Message: {response.Message}"); // Log to console
+
+        AlertMessage = response.Message; // Set alert message based on response
+
+        if (response.Flag)
+        {
+            Register = new(); 
+            NavManager.NavigateTo("/", forceLoad: true);
+        }
     }
 }
