@@ -9,8 +9,9 @@
 @using System.Threading.Tasks;
 @using System.Linq;
 @using System.Diagnostics;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Authorization;
 
-@using Microsoft.AspNetCore.Authorization
 @inject IAccountService accountService
 @inject IJSRuntime js
 @inject NavigationManager NavManager
@@ -18,12 +19,11 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
 
-
 @if (Authorized)
 {
 
     <div class="header">
-        <h1>Welcome, Admin!</h1>
+        <h1>Welcome, @($"{currentAdmin?.FirstName} {currentAdmin?.LastName}")!</h1>
         <div class="header-right">
             <div class="dropdown">
                 <button class="btn btn-dropdown">Directories</button>
@@ -57,7 +57,7 @@
                 <a href="@file.Link" target="_blank">@file.Name</a>
                 <div class="file-item-buttons">
                     <button class="btn btn-secondary" @onclick="() => EditFile(file)">Edit</button>
-                    <button class="btn btn-danger" @onclick="() => DeleteFile(file)">Delete</button>
+                    <button class="btn btn-danger" @onclick="() => ShowDeleteFileConfirmation(file)">Delete</button>
                 </div>
             </li>
         }
@@ -108,6 +108,7 @@
             </div>
         </div>
     }
+
     @if (isEditFileModalVisible)
     {
         <div class="modal-overlay">
@@ -149,6 +150,20 @@
         </div>
     }
 
+    @if (isDeleteConfirmationVisible)
+    {
+        <div class="confirm-overlay" @onclick="HideDeleteFileConfirmation">
+            <div class="confirm-modal" @onclick:stopPropagation="true">
+                <h2>Confirm Deletion</h2>
+                <p>Are you sure you want to delete the form '<strong>@fileToDelete?.Name</strong>'?</p>
+                <div class="button-group">
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                    <button class="btn btn-secondary" @onclick="HideDeleteFileConfirmation">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+
 }
 else
 {
@@ -158,145 +173,82 @@ else
 
 @code {
     private bool Authorized = false;
+    private Administrator currentAdmin;
+    private FileModel newFile = new FileModel();
+    private FileModel fileToEdit;
+    private FileItem fileToDelete;
+
+    private List<FileItem> fileList = new();
+
+    private bool isAddFileModalVisible = false;
+    private bool isEditFileModalVisible = false;
+    private bool isDeleteConfirmationVisible = false;
+
+    private IBrowserFile selectedFile;
+    private EditContext editContext;
+    private ValidationMessageStore messageStore;
+
+    private string originalFilePath;
+    private string fileError = string.Empty;
+
+    // Load Page
     protected override async Task OnInitializedAsync()
     {
         var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
         Authorized = await customAuthProvider.IsAuthenticated("Admin");
-    }
-    private FileModel fileToEdit;
-    private bool isEditFileModalVisible = false;
-    private string originalFilePath;
 
-    private bool isAddFileModalVisible = false;
-    private FileModel newFile = new FileModel();
-    private IBrowserFile selectedFile;
-    private string fileError = string.Empty;
+        if (Authorized)
+        {
+            try
+            {
+                currentAdmin = await GetCurrentAdminDetails();
+                editContext = new EditContext(newFile);
+                messageStore = new ValidationMessageStore(editContext);
+                editContext.OnFieldChanged += HandleFieldChanged;
 
-    private EditContext editContext;
-    private ValidationMessageStore messageStore;
-
-    private List<FileItem> fileList = new();
-
-    protected override void OnInitialized()
-    {
-        // Initialize the EditContext and ValidationMessageStore
-        editContext = new EditContext(newFile);
-        messageStore = new ValidationMessageStore(editContext);
-        editContext.OnFieldChanged += HandleFieldChanged;
-
-        LoadFilesFromUploadsDirectory();
+                LoadFilesFromUploadsDirectory();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving admin data: {ex.Message}");
+            }
+        }
     }
 
-    private void ShowAddFileModal()
-    {
-        isAddFileModalVisible = true;
-    }
-
-    private void HideAddFileModal()
-    {
-        isAddFileModalVisible = false;
-        ClearForm();
-    }
-
+    // Handles changes to fields in the form
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
+        // Clear validation messages for new file model
         if (editContext.Model == newFile && e.FieldIdentifier.FieldName == nameof(newFile.FormName))
         {
             messageStore.Clear(e.FieldIdentifier);
-            Debug.WriteLine($"Field changed: {e.FieldIdentifier.FieldName}, New Value: {newFile.FormName}");
             StateHasChanged();
         }
-        // Check if editing an existing file
+        // Clear validation messages for editing an existing file
         else if (editContext.Model == fileToEdit && e.FieldIdentifier.FieldName == nameof(fileToEdit.FormName))
         {
             messageStore.Clear(e.FieldIdentifier);
-            Debug.WriteLine($"Field changed: {e.FieldIdentifier.FieldName}, New Value: {fileToEdit.FormName}");
             StateHasChanged();
         }
     }
 
-    private void HideEditFileModal()
+    private async Task<Administrator> GetCurrentAdminDetails()
     {
-        isEditFileModalVisible = false;
-        ClearForm();
-    }
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-
-    private async Task HandleValidEditSubmit()
-    {
-        if (fileToEdit == null)
+        if (user.Identity.IsAuthenticated)
         {
-            return;
-        }
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-        var formsToUpdate = await DbContext.Forms
-            .Where(f => f.FilePath == originalFilePath) 
-            .ToListAsync();
-
-        if (formsToUpdate != null && formsToUpdate.Count > 0)
-        {
-            foreach (var formToUpdate in formsToUpdate)
+            if (!string.IsNullOrEmpty(email))
             {
-                formToUpdate.FormName = fileToEdit.FormName;
-                formToUpdate.ShortDescription = fileToEdit.Description;
-                formToUpdate.ExpirationDate = fileToEdit.ExpirationDate;
-
-                // Do NOT change the AssignedStudentId :(
+                return await DbContext.Administrators
+                    .FirstOrDefaultAsync(a => a.Email == email);
             }
-
-            await DbContext.SaveChangesAsync(); 
-            Debug.WriteLine("All related forms updated successfully.");
-        }
-        else
-        {
-            Debug.WriteLine("No forms found to update in the database.");
         }
 
-        LoadFilesFromUploadsDirectory();
-        isEditFileModalVisible = false;
-    }
-
-
-    private bool ValidateFile()
-    {
-        bool isValid = true;
-        messageStore.Clear();
-
-        if (selectedFile == null)
-        {
-            messageStore.Add(() => newFile.PdfFile, "A PDF file must be uploaded.");
-            isValid = false;
-        }
-        else if (selectedFile.ContentType != "application/pdf")
-        {
-            messageStore.Add(() => newFile.PdfFile, "Only PDF files are allowed.");
-            isValid = false;
-        }
-
-        editContext.NotifyValidationStateChanged();
-        return isValid;
-    }
-
-    private void ClearForm()
-    {
-        newFile = new FileModel();
-        selectedFile = null;
-    }
-
-    private void HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        selectedFile = e.FileCount > 0 ? e.File : null;
-
-        messageStore.Clear(() => newFile.PdfFile);
-
-        if (selectedFile == null || selectedFile.ContentType != "application/pdf")
-        {
-            var error = selectedFile == null ? "A PDF file must be uploaded." : "Only PDF files are allowed.";
-            messageStore.Add(() => newFile.PdfFile, error);
-            selectedFile = null;
-        }
-
-        editContext.NotifyValidationStateChanged();
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
     private void LoadFilesFromUploadsDirectory()
@@ -313,22 +265,80 @@ else
         }
     }
 
-    // adds file to uploads folder
-    private async Task<string> SaveFileAsync(IBrowserFile file)
+    private void ClearForm()
     {
-        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-        Directory.CreateDirectory(uploadsFolderPath);
-        var filePath = Path.Combine(uploadsFolderPath, file.Name);
-
-        const long maxAllowedSize = 1000000;
-
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
-        }
-        return $"/uploads/{file.Name}";
+        newFile = new FileModel();
+        selectedFile = null;
     }
 
+    // Add File Modal
+    private void ShowAddFileModal() => isAddFileModalVisible = true;
+    
+    private void HideAddFileModal()
+    {
+        isAddFileModalVisible = false;
+        ClearForm();
+    }
+
+    // Edit File Modal
+    private async Task HandleValidEditSubmit()
+    {
+        if (fileToEdit == null)
+        {
+            return;
+        }
+
+        var formsToUpdate = await DbContext.Forms
+            .Where(f => f.FilePath == originalFilePath)
+            .ToListAsync();
+
+        if (formsToUpdate != null && formsToUpdate.Count > 0)
+        {
+            foreach (var formToUpdate in formsToUpdate)
+            {
+                formToUpdate.FormName = fileToEdit.FormName;
+                formToUpdate.ShortDescription = fileToEdit.Description;
+                formToUpdate.ExpirationDate = fileToEdit.ExpirationDate;
+
+                // Do NOT change the AssignedStudentId :(
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
+        else
+        {
+            Debug.WriteLine("No forms found to update in the database.");
+        }
+
+        LoadFilesFromUploadsDirectory();
+        isEditFileModalVisible = false;
+    }
+
+    private void HideEditFileModal()
+    {
+        isEditFileModalVisible = false;
+        ClearForm();
+    }
+
+    // Delete File Modal
+    private async Task ShowDeleteFileConfirmation(FileItem file) => (fileToDelete, isDeleteConfirmationVisible) = (file, true);
+    private void HideDeleteFileConfirmation() => (isDeleteConfirmationVisible, fileToDelete) = (false, null);
+
+
+    private async Task ConfirmDelete()
+    {
+        if (fileToDelete != null)
+        {
+            await DeleteFile(fileToDelete);
+        }
+
+        isDeleteConfirmationVisible = false; 
+        fileToDelete = null; 
+    }
+
+    ////----------------------------------------------------------------------------------------------------------------////
+
+    // Add Form Functionality
     private async Task HandleValidSubmit()
     {
         if (!ValidateFile())
@@ -336,23 +346,12 @@ else
             return;
         }
 
-        Debug.WriteLine("HandleValidSubmit method called.\n");
-        Debug.WriteLine($"Form Name: {newFile.FormName}");
-        Debug.WriteLine($"Description: {newFile.Description}");
-        Debug.WriteLine($"Expiration Date: {newFile.ExpirationDate.ToShortDateString()}\n");
-
         string filePath = string.Empty;
         if (selectedFile != null)
         {
             filePath = await SaveFileAsync(selectedFile);
             Debug.WriteLine($"File saved to: {filePath}");
         }
-
-        Debug.WriteLine("Form Information:");
-        Debug.WriteLine($"Short Description: {newFile.Description}");
-        Debug.WriteLine($"Expiration Date: {newFile.ExpirationDate.ToShortDateString()}");
-        Debug.WriteLine($"File Path: {filePath}");
-        Debug.WriteLine($"Assigned To: {newFile.AssignedTo}\n");
 
         if (newFile.AssignedTo == -1) // Assign to all students
         {
@@ -379,6 +378,59 @@ else
         isAddFileModalVisible = false;
     }
 
+    private bool ValidateFile()
+    {
+        bool isValid = true;
+        messageStore.Clear();
+
+        if (selectedFile == null)
+        {
+            messageStore.Add(() => newFile.PdfFile, "A PDF file must be uploaded.");
+            isValid = false;
+        }
+        else if (selectedFile.ContentType != "application/pdf")
+        {
+            messageStore.Add(() => newFile.PdfFile, "Only PDF files are allowed.");
+            isValid = false;
+        }
+
+        editContext.NotifyValidationStateChanged();
+        return isValid;
+    }
+
+    // Makes sure selected file is a pdf 
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.FileCount > 0 ? e.File : null;
+
+        messageStore.Clear(() => newFile.PdfFile);
+
+        if (selectedFile == null || selectedFile.ContentType != "application/pdf")
+        {
+            var error = selectedFile == null ? "A PDF file must be uploaded." : "Only PDF files are allowed.";
+            messageStore.Add(() => newFile.PdfFile, error);
+            selectedFile = null;
+        }
+
+        editContext.NotifyValidationStateChanged();
+    }
+
+    // Adds file to uploads folder
+    private async Task<string> SaveFileAsync(IBrowserFile file)
+    {
+        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        Directory.CreateDirectory(uploadsFolderPath);
+        var filePath = Path.Combine(uploadsFolderPath, file.Name);
+
+        const long maxAllowedSize = 1000000;
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
+        }
+        return $"/uploads/{file.Name}";
+    }
+
     private async Task CreateFormsForAllStudents(string filePath)
     {
         var maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
@@ -397,23 +449,11 @@ else
                     FormName = newFile.FormName
                 };
 
-            Debug.WriteLine("Creating form for all students:");
-            Debug.WriteLine($"Short Description: {studentForm.ShortDescription}");
-            Debug.WriteLine($"Expiration Date: {studentForm.ExpirationDate.ToShortDateString()}");
-            Debug.WriteLine($"File Path: {studentForm.FilePath}");
-            Debug.WriteLine($"Assigned Student ID: {studentForm.AssignedStudentId}\n");
-
             DbContext.Forms.Add(studentForm);
         }
     }
 
-    private void SignOut()
-    {
-        Debug.WriteLine("SignOut button clicked.");
-        // Implement sign-out logic here
-    }
-
-
+    // Edit File Functionality
     private void EditFile(FileItem file)
     {
         var formToEdit = DbContext.Forms
@@ -441,16 +481,9 @@ else
         }
     }
     
-
+    // Delete File Functionality
     private async Task DeleteFile(FileItem file)
     {
-        // Show confirmation dialog before deleting
-        bool confirmed = await ShowDeleteConfirmation(file.Name);
-        if (!confirmed)
-        {
-            return;
-        }
-
         // Delete the file from the uploads folder
         var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", file.Name);
         if (File.Exists(filePath))
@@ -474,11 +507,13 @@ else
         LoadFilesFromUploadsDirectory();
     }
 
-    //shows javascript confirmation - probs will change later
-    private async Task<bool> ShowDeleteConfirmation(string fileName)
+    private async Task SignOut()
     {
-        var confirmed = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the form '{fileName}'?");
-        return confirmed;
+        // Invalidate the authentication state
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthProvider.Logout();
+
+        NavManager.NavigateTo("/", true);
     }
 
     //Checks that the expiration date is in the future

@@ -51,9 +51,8 @@ namespace FormsBGone.Repos
             var findUser = await GetUser(model.Username);
             if (findUser == null) { return new LoginResponse(false, "User not found."); }
 
-
             bool isPasswordValid = BCrypt.Net.BCrypt.EnhancedVerify(model.Password, findUser.EncryptedPassword);
-            // FIXME: This is using plain text passwords. Include password encryption here!!! 
+
             if (!isPasswordValid) 
                 return new LoginResponse(false, "Email/Password not valid");
 
@@ -65,14 +64,28 @@ namespace FormsBGone.Repos
 
         public string FindUserRole(string email)
         {
-            if (appDbContext.Teachers.FirstOrDefault(t => t.Email == email) != null) return "Teacher";
-
-            else if (appDbContext.Parents.FirstOrDefault(t => t.Email == email) != null) return "Parent";
-
-            else if (appDbContext.Administrators.FirstOrDefault(t => t.Email == email) != null) return "Admin";
-
-            else return "";
-		}
+            Console.WriteLine($"Checking role for email: {email}"); // Log input email
+            if (appDbContext.Teachers.FirstOrDefault(t => t.Email == email) != null)
+            {
+                Console.WriteLine("Role found: Teacher");
+                return "Teacher";
+            }
+            else if (appDbContext.Parents.FirstOrDefault(t => t.Email == email) != null)
+            {
+                Console.WriteLine("Role found: Parent");
+                return "Parent";
+            }
+            else if (appDbContext.Administrators.FirstOrDefault(t => t.Email == email) != null)
+            {
+                Console.WriteLine("Role found: Admin");
+                return "Admin";
+            }
+            else
+            {
+                Console.WriteLine("No role found for email.");
+                return ""; // No role found
+            }
+        }
 
         public async Task<RegistrationResponse> RegisterAsync(RegisterDTO model)
         {
@@ -81,6 +94,7 @@ namespace FormsBGone.Repos
                 var findUser = await GetUser(model.Username);
                 if (findUser != null) { return new RegistrationResponse(false, "User already exists."); }
 
+                // DON'T THINK THIS IS EVER CALLED.
                 var role = FindUserRole(model.Email);
                 if (role == "") { return new RegistrationResponse(false, "User personal info not found in our database."); }
                 else Constants.UserRole = role;
@@ -88,7 +102,6 @@ namespace FormsBGone.Repos
                 if (model.Password != model.ConfirmPassword) { return new RegistrationResponse(false, "Passwords do not match."); }
 
                 string passwordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(model.Password, 13);
-                // FIXME: This is adding the account to the DB without encrypting the password. Encrypt the password here!!!
 
                 appDbContext.Accounts.Add(
                     new Account()
@@ -104,7 +117,8 @@ namespace FormsBGone.Repos
             }
             catch (Exception ex)
             {
-                return new RegistrationResponse(false, ex.ToString());
+                Console.WriteLine($"Exception during registration: {ex}");
+                return new RegistrationResponse(false, "Exception Found.");
             }
         }
 

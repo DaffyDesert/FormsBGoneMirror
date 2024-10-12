@@ -1,6 +1,5 @@
 ﻿@page "/"
 @inject IAccountService accountService
-@inject IJSRuntime js
 @inject NavigationManager NavManager
 @inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
@@ -11,12 +10,23 @@
             <div class="logo-section">
                 <img src="/Images/logoText.png" alt="Forms-B-Gone Logo">
             </div>
-            <EditForm Model="@Login" OnValidSubmit="HandleLogin">
-                <input type="text" placeholder="Username" @bind="Login.Username" />
-                <input type="password" placeholder="Password" @bind="Login.Password" />
-                <button type="submit" class="btn btn-primary large-btn" @onclick="HandleLogin">Login</button>
-                <ValidationSummary />
-            </EditForm>
+
+            <div class="form-container">
+                <!-- Added container for inputs and error message -->
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert" role="alert">
+                        @errorMessage
+                    </div>
+                }
+
+                <EditForm Model="@Login" OnValidSubmit="HandleLogin">
+                    <input type="text" placeholder="Username" @bind="Login.Username" />
+                    <input type="password" placeholder="Password" @bind="Login.Password" />
+                    <button type="submit" class="btn btn-primary large-btn">Login</button>
+                    <ValidationSummary />
+                </EditForm>
+            </div>
 
             <div class="signup">
                 <span class="signup">
@@ -29,17 +39,19 @@
 </div>
 
 @code {
-    LoginDTO Login = new();
+    private LoginDTO Login = new();
+    private string errorMessage;
 
     private async Task HandleLogin()
     {
         LoginResponse response = await accountService.LoginAsync(Login);
         if (!response.Flag)
         {
-            await js.InvokeVoidAsync("alert", response.Message);
+            errorMessage = "Invalid email/password combination"; // Set your error message
             return;
         }
 
+        errorMessage = null; // Reset error message on successful login
         var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
         customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
 

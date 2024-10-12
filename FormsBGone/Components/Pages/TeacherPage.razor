@@ -1,0 +1,228 @@
+﻿@page "/teacher"
+
+@using Microsoft.AspNetCore.Authorization
+@using FormsBGone.Model;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.AspNetCore.Components.Web;
+@using System.Threading.Tasks;
+@using System.Security.Claims;
+
+@rendermode InteractiveServer
+@inject CapstoneContext DbContext
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavManager
+@inject HttpClient client
+
+@if (Authorized)
+{
+    <div class="header">
+        <h1>Welcome, @($"{currentTeacher?.FirstName} {currentTeacher?.LastName}")!</h1>
+        <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
+    </div>
+
+    <hr />
+
+    <div class="header-container">
+        <div class="student-directory">
+            <h2>Student Directory</h2>
+        </div>
+
+        <div class="search-container">
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+
+            <!-- Filter Dropdown -->
+            <!--
+            <div class="filter-dropdown">
+                <select @onchange="OnFilterChange">
+                    <option value="">All</option>
+                    <option value="GradeA">Grade A</option>
+                    <option value="GradeB">Grade B</option>
+                    <option value="GradeC">Grade C</option>
+                </select>
+            </div>
+            --> 
+        </div>
+    </div>
+
+    @if (students.Any())
+    {
+        <ul class="student-list">
+            @foreach (var student in filteredStudentList)
+            {
+                <li class="student-item">
+                    <span>@($"{student.FirstName} {student.LastName}")</span>
+                    <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(student.StudentId)">View Forms</button>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="no-students">
+            <p>No students found.</p>
+        </div>
+    }
+
+    @if (isViewFormsModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3>Form Directory: @selectedStudent?.FirstName @selectedStudent?.LastName </h3>
+                @if (selectedStudentForms?.Any() == true)
+                {
+                    <ul class="form-list">
+                        @foreach (var form in selectedStudentForms)
+                        {
+                            <li class="form-item">
+                                <strong>@form.FormName</strong>
+                                <span class="status-box @GetStatusClass(form.Status)">
+                                    @form.Status
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (selectedStudent != null)
+                {
+                    <div class="no-forms">
+                        <p>No forms found for @selectedStudent.FirstName @selectedStudent.LastName.</p>
+                    </div>
+                }
+                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Error 401: Unauthorized</p>
+}
+
+@code {
+    private bool Authorized = false;
+    private bool isViewFormsModalVisible = false;
+    private string searchQuery = string.Empty;
+    private string selectedFilter = string.Empty;
+    private Teacher currentTeacher;
+
+    private List<Student> students = new();
+    private List<Student> filteredStudentList = new();
+    private List<Form> selectedStudentForms = new();
+
+    private Student selectedStudent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        Authorized = await customAuthProvider.IsAuthenticated("Teacher");
+
+        if (Authorized)
+        {
+            try
+            {
+                currentTeacher = await GetCurrentTeacherDetails();
+                if (currentTeacher != null)
+                {
+                    students = currentTeacher.Students.ToList(); // Fetch students assigned to this teacher
+                    filteredStudentList = students; // Initial load shows all students
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving teacher data: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task<Teacher> GetCurrentTeacherDetails()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                return await DbContext.Teachers
+                    .Include(t => t.Students)
+                    .FirstOrDefaultAsync(t => t.Email == email);
+            }
+        }
+
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private async Task ShowViewFormsModal(int studentId)
+    {
+        await LoadStudentForms(studentId); 
+        isViewFormsModalVisible = true;
+    }
+
+    private void HideViewFormsModal()
+    {
+        isViewFormsModalVisible = false;
+        selectedStudentForms.Clear();
+        selectedStudent = null;
+    }
+
+    private async Task LoadStudentForms(int studentId)
+    {
+        selectedStudent = students.FirstOrDefault(s => s.StudentId == studentId);
+
+        if (selectedStudent != null)
+        {
+            selectedStudentForms = await DbContext.Forms
+                .Where(f => f.AssignedStudentId == studentId)
+                .ToListAsync();
+        }
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Assigned" => "status-assigned",
+            "Not Reviewed" => "status-not-reviewed",
+            "Completed" => "status-complete",
+            _ => "status-unknown" // fallback for unknown statuses
+        };
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        // FilterStudents();
+    }
+
+    // private void FilterStudents()
+    // {
+    //     // Filter the student list based on the current search query and selected filter
+    //     filteredStudentList = students
+    //         .Where(s => string.IsNullOrEmpty(searchQuery) ||
+    //                     $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+    //         .Where(s => string.IsNullOrEmpty(selectedFilter) || s.Grade == selectedFilter)
+    //         .ToList();
+    // }
+
+    private void OnFilterChange(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value.ToString();
+        // FilterStudents();
+    }
+
+    private async Task SignOut()
+    {
+        // Invalidate the authentication state
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthProvider.Logout();
+
+        NavManager.NavigateTo("/", true);
+    }
+}

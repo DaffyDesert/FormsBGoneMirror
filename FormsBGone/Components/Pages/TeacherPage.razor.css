@@ -1,0 +1,283 @@
+﻿/* General Styles */
+body {
+    padding-right: 40px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9fb; /* Lighter background for teachers */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 40px;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #004080; /* Slightly different dark blue for teachers */
+}
+
+h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #092daa;
+}
+
+/* Button Styles */
+.btn-signout {
+    background-color: #5a6268; /* Gray for sign-out button */
+    color: white;
+    padding: 10px 25px;
+    font-size: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    .btn-signout:hover {
+        background-color: #4e555b; /* Darker gray on hover */
+    }
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 50px 20px 80px;
+}
+
+.student-directory h2 {
+    font-size: 2.5rem; /* Larger heading */
+    font-weight: bold;
+    color: #003366; /* Dark blue */
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Search Bar Styles */
+.search-bar {
+    display: flex;
+    justify-content: flex-end; 
+    margin: 0; 
+    margin-right: 10px; 
+}
+
+    .search-bar input[type="text"] {
+        width: 300px;
+        padding: 10px 15px;
+        font-size: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 5px; 
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        .search-bar input[type="text"]:focus {
+            outline: none;
+            border-color: #004080; 
+        }
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    display: inline-block;
+    position: relative;
+    margin-left: 0; 
+}
+
+    .filter-dropdown select {
+        padding: 10px;
+        font-size: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+        .filter-dropdown select:focus {
+            outline: none;
+            border-color: #004080; 
+        }
+
+.no-students {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    margin: 20px auto; 
+    padding: 15px; 
+    width: 300px; 
+    height: 100px; 
+    text-align: center; 
+    background-color: #fff; /* White background */
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    font-size: 24px; 
+    color: #505050; /* Darker gray color */
+}
+
+.student-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 30px 50px 20px 80px;
+}
+
+    .student-item {
+        display: flex;
+        justify-content: space-between; 
+        align-items: center;
+        font-size: 22px;
+        padding: 10px;
+        border-bottom: 1px solid #ccc; 
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        height: 60px; 
+        transition: background-color 0.3s ease;
+    }
+
+        .student-item:hover {
+            background-color: #f0f8ff; /* Light blue on hover */
+        }
+
+.btn-view-forms {
+    background-color: #004080;
+    color: white;
+    border: none;
+    font-size: 18px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+    .btn-view-forms:hover {
+        background-color: #002a60;
+    }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    display: block;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); 
+    padding: 30px; 
+    width: 90%;
+    max-width: 1100px; 
+    max-height: 50vh; 
+    overflow-y: auto; /* Ensure content is scrollable if needed */
+    animation: fadeIn 0.3s ease-out; /* Fade-in animation */
+}
+
+.btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333; /* Darker color for visibility */
+    cursor: pointer; 
+    transition: color 0.3s ease; /* Smooth color transition */
+}
+
+    .btn-close:hover {
+        color: #000; /* Darker color on hover */
+    }
+
+/* Form List Styles */
+.form-list {
+    list-style-type: none; 
+    padding: 0; 
+    margin: 20px 0; 
+}
+
+    .form-item {
+        display: flex;
+        justify-content: space-between; 
+        align-items: center; 
+        font-size: 20px; 
+        padding: 10px;
+        margin-bottom: 8px;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+        color: #333; /* Text color */
+        transition: background-color 0.3s ease; /* Smooth transition on hover */
+    }
+
+        .form-item:hover {
+            background-color: #f0f8ff; /* Light blue on hover */
+        }
+
+    .status-box {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        min-width: 100px;
+        display: inline-block; 
+        color: white; 
+    }
+
+    /* Status Colors */
+    .status-assigned {
+        background-color: #808080; /* Grey for Assigned */
+    }
+
+    .status-not-reviewed {
+        background-color: #ff0000; /* Red for Not Reviewed */
+    }
+
+    .status-complete {
+        background-color: #008000; /* Green for Complete */
+    }
+
+    .status-unknown {
+        background-color: #cccccc; /* Light grey for unknown statuses */
+        color: black;
+    }
+
+/* No Forms Message */
+.no-forms {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    padding: 20px;
+    background-color: #fefefe; /* White background */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+    color: #505050; /* Darker text color */
+    margin: 20px auto; 
+    font-size: 20px; 
+    width: 400px; 
+    text-align: center; 
+}
+
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
