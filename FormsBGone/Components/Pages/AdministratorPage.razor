@@ -445,36 +445,59 @@ else
             maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
         }
 
+        var baseFilePath = filePath;  // Save this for the base admin copy
+
         var students = await DbContext.Students.ToListAsync();
         foreach (var student in students)
         {
+            // Store relative path in the database, excluding full directory path
+            var studentFileRelativePath = $"/uploads/{student.StudentId}/{file.Name}";
+
+            // Add a form entry for the student with the relative file path
             var studentForm = new Form
                 {
                     FormId = ++maxFormId,
                     ShortDescription = newFile.Description,
                     ExpirationDate = newFile.ExpirationDate,
-                    FilePath = filePath,
+                    FilePath = studentFileRelativePath,  // Use relative path here
                     Status = "Assigned",
                     AssignedStudentId = student.StudentId,
                     FormName = newFile.FormName
                 };
             DbContext.Forms.Add(studentForm);
 
+            // Create the student's directory if it doesn't exist
             var studentDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", student.StudentId.ToString());
             if (!Directory.Exists(studentDirectoryPath))
             {
                 Directory.CreateDirectory(studentDirectoryPath);
             }
-            filePath = Path.Combine(studentDirectoryPath, file.Name);
 
+            // Save a copy of the file in the student's directory
+            var studentFilePath = Path.Combine(studentDirectoryPath, file.Name);
             const long maxAllowedSize = 10000000;
 
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            // Save the file to the student's directory
+            using (var fileStream = new FileStream(studentFilePath, FileMode.Create))
             {
                 await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
             }
         }
+
+        // Save the base copy for admin reference (if not saved already)
+        var adminFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", baseFilePath.Replace("/uploads/base/", ""));
+        if (!File.Exists(adminFilePath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(adminFilePath));
+            using (var fileStream = new FileStream(adminFilePath, FileMode.Create))
+            {
+                await file.OpenReadStream(10000000).CopyToAsync(fileStream);
+            }
+        }
+
+        await DbContext.SaveChangesAsync();
     }
+
 
     // Edit File Functionality
     private void EditFile(FileItem file)
@@ -507,28 +530,57 @@ else
     // Delete File Functionality
     private async Task DeleteFile(FileItem file)
     {
-        // Delete the file from the uploads folder
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base", file.Name);
-        if (File.Exists(filePath))
+        // Delete the base file from the admin uploads folder
+        var baseFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base", file.Name);
+        if (File.Exists(baseFilePath))
         {
-            File.Delete(filePath);
-            Debug.WriteLine($"Deleted file: {filePath}");
+            File.Delete(baseFilePath);
+            Debug.WriteLine($"Deleted base file: {baseFilePath}");
+        }
+        else
+        {
+            Debug.WriteLine($"Base file not found: {baseFilePath}");
         }
 
-        // Remove associated entries from the database
+        // Get all the form entries associated with the file
         var formsToDelete = await DbContext.Forms
-            .Where(f => f.FilePath == $"/uploads/base/{file.Name}")
+            .Where(f => f.FilePath.EndsWith($"/{file.Name}"))  // Match exactly the file name
             .ToListAsync();
 
         if (formsToDelete.Any())
         {
+            // Loop through each form and delete the file from the student's directory
+            foreach (var form in formsToDelete)
+            {
+                // Construct the student file path from the form entry's FilePath
+                var studentFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", form.FilePath.TrimStart('/'));
+
+                if (File.Exists(studentFilePath))
+                {
+                    File.Delete(studentFilePath);
+                    Debug.WriteLine($"Deleted student file: {studentFilePath}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Student file not found: {studentFilePath}");
+                }
+            }
+
+            // Remove associated entries from the database
             DbContext.Forms.RemoveRange(formsToDelete);
             await DbContext.SaveChangesAsync();
-            Debug.WriteLine($"Deleted {formsToDelete.Count} forms associated with {file.Name} from the database.");
+            Debug.WriteLine($"Deleted {formsToDelete.Count} form entries from the database.");
+        }
+        else
+        {
+            Debug.WriteLine($"No forms found for {file.Name}.");
         }
 
+        // Reload the list of files after deletion
         LoadFilesFromUploadsDirectory();
     }
+
+
 
     private async Task SignOut()
     {
