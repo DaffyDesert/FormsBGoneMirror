@@ -133,14 +133,6 @@
                         <InputDate id="editExpirationDate" class="custom-form-control" @bind-Value="fileToEdit.ExpirationDate" />
                     </div>
 
-                    <div class="form-group">
-                        <label for="editAssignedTo">Assigned To:</label>
-                        <select id="editAssignedTo" class="custom-form-control" @bind="fileToEdit.AssignedTo">
-                            <option value="">-- Select --</option>
-                            <option value="-1">All</option>
-                        </select>
-                    </div>
-
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                         <button type="button" class="btn btn-secondary" @onclick="HideEditFileModal">Cancel</button>
@@ -149,6 +141,9 @@
             </div>
         </div>
     }
+
+
+
 
     @if (isDeleteConfirmationVisible)
     {
@@ -280,45 +275,106 @@ else
         ClearForm();
     }
 
+    private void HideEditFileModal()
+    {
+        isEditFileModalVisible = false; 
+        ClearEditForm(); 
+    }
+
+    private void ClearEditForm()
+    {
+        fileToEdit = new FileModel(); 
+    }
+
+
     // Edit File Modal
     private async Task HandleValidEditSubmit()
     {
         if (fileToEdit == null)
         {
+            Debug.WriteLine("No file to edit.");
             return;
         }
 
+        // Find all form entries for the given original file path
         var formsToUpdate = await DbContext.Forms
-            .Where(f => f.FilePath == originalFilePath)
+            .Where(f => f.FilePath.Contains($"/{Path.GetFileName(originalFilePath)}"))
             .ToListAsync();
 
-        if (formsToUpdate != null && formsToUpdate.Count > 0)
+        if (formsToUpdate.Any())
         {
-            foreach (var formToUpdate in formsToUpdate)
-            {
-                formToUpdate.FormName = fileToEdit.FormName;
-                formToUpdate.ShortDescription = fileToEdit.Description;
-                formToUpdate.ExpirationDate = fileToEdit.ExpirationDate;
+            Debug.WriteLine($"Found {formsToUpdate.Count} form(s) to update.");
 
-                // Do NOT change the AssignedStudentId :(
+            // Handle base file rename (not part of the database)
+            var oldFileName = Path.GetFileName(originalFilePath);
+            var newFileName = fileToEdit.FormName + Path.GetExtension(originalFilePath);
+
+            var oldBaseFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base", oldFileName);
+            var newBaseFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base", newFileName);
+
+            // Rename the base file (admin's version)
+            if (File.Exists(oldBaseFilePath))
+            {
+                File.Move(oldBaseFilePath, newBaseFilePath);
+                Debug.WriteLine($"Renamed base file from {oldBaseFilePath} to {newBaseFilePath}");
+            }
+            else
+            {
+                Debug.WriteLine($"Base file not found: {oldBaseFilePath}");
             }
 
+            // Update all the student files and database entries
+            foreach (var form in formsToUpdate)
+            {
+                Debug.WriteLine($"Updating form with original file path: {form.FilePath}");
+
+                // Update form details (name, description, expiration date)
+                form.FormName = fileToEdit.FormName;
+                form.ShortDescription = fileToEdit.Description;
+                form.ExpirationDate = fileToEdit.ExpirationDate;
+
+                // Check if the form name (file name) has changed, and update the student file path if necessary
+                var oldStudentFileName = Path.GetFileName(originalFilePath);
+                var newStudentFileName = fileToEdit.FormName + Path.GetExtension(originalFilePath);
+
+                var oldStudentFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", form.FilePath.TrimStart('/'));
+                var newStudentFilePath = form.FilePath.Replace(oldStudentFileName, newStudentFileName);
+                var newStudentFilePathFull = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", newStudentFilePath.TrimStart('/'));
+
+                if (File.Exists(oldStudentFilePath))
+                {
+                    File.Move(oldStudentFilePath, newStudentFilePathFull);
+                    Debug.WriteLine($"Renamed student file from {oldStudentFilePath} to {newStudentFilePathFull}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Student file not found: {oldStudentFilePath}");
+                }
+
+                // Update the file path in the form entry
+                form.FilePath = newStudentFilePath;
+
+                // Mark the form as modified in the context
+                DbContext.Forms.Update(form);
+            }
+
+            // Save the changes to the database
             await DbContext.SaveChangesAsync();
+            Debug.WriteLine($"Updated {formsToUpdate.Count} form(s) with new details: {fileToEdit.FormName}, {fileToEdit.Description}, {fileToEdit.ExpirationDate}");
         }
         else
         {
-            Debug.WriteLine("No forms found to update in the database.");
+            Debug.WriteLine($"No forms found for the original file path: {originalFilePath}");
         }
 
+        // Reload files to reflect the changes
         LoadFilesFromUploadsDirectory();
+
+        // Hide the edit modal
         isEditFileModalVisible = false;
     }
 
-    private void HideEditFileModal()
-    {
-        isEditFileModalVisible = false;
-        ClearForm();
-    }
+
 
     // Delete File Modal
     private async Task ShowDeleteFileConfirmation(FileItem file) => (fileToDelete, isDeleteConfirmationVisible) = (file, true);
@@ -422,7 +478,10 @@ else
     {
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
         Directory.CreateDirectory(uploadsFolderPath);
-        var filePath = Path.Combine(uploadsFolderPath, file.Name);
+
+        // Use the form name for the saved file instead of the uploaded file name
+        var fileName = newFile.FormName + Path.GetExtension(file.Name);  // Use the form name as file name
+        var filePath = Path.Combine(uploadsFolderPath, fileName);
 
         const long maxAllowedSize = 10000000;
 
@@ -430,8 +489,11 @@ else
         {
             await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
         }
-        return $"/uploads/base/{file.Name}";
+
+        return $"/uploads/base/{fileName}";
     }
+
+
 
 
     //big changes here
@@ -445,87 +507,84 @@ else
             maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
         }
 
-        var baseFilePath = filePath;  // Save this for the base admin copy
-
         var students = await DbContext.Students.ToListAsync();
         foreach (var student in students)
         {
-            // Store relative path in the database, excluding full directory path
-            var studentFileRelativePath = $"/uploads/{student.StudentId}/{file.Name}";
-
-            // Add a form entry for the student with the relative file path
             var studentForm = new Form
                 {
                     FormId = ++maxFormId,
                     ShortDescription = newFile.Description,
                     ExpirationDate = newFile.ExpirationDate,
-                    FilePath = studentFileRelativePath,  // Use relative path here
+                    FilePath = filePath,  // This will be the base file path initially
                     Status = "Assigned",
                     AssignedStudentId = student.StudentId,
                     FormName = newFile.FormName
                 };
             DbContext.Forms.Add(studentForm);
 
-            // Create the student's directory if it doesn't exist
+            // Create a file for each student in their directory
             var studentDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", student.StudentId.ToString());
-            if (!Directory.Exists(studentDirectoryPath))
-            {
-                Directory.CreateDirectory(studentDirectoryPath);
-            }
+            Directory.CreateDirectory(studentDirectoryPath);
 
-            // Save a copy of the file in the student's directory
-            var studentFilePath = Path.Combine(studentDirectoryPath, file.Name);
+            // Ensure the file name in the student directory matches the form name
+            var studentFileName = newFile.FormName + Path.GetExtension(file.Name);
+            var studentFilePath = Path.Combine(studentDirectoryPath, studentFileName);
+
             const long maxAllowedSize = 10000000;
 
-            // Save the file to the student's directory
+            // Copy the file to each student's directory
             using (var fileStream = new FileStream(studentFilePath, FileMode.Create))
             {
                 await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
             }
-        }
 
-        // Save the base copy for admin reference (if not saved already)
-        var adminFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", baseFilePath.Replace("/uploads/base/", ""));
-        if (!File.Exists(adminFilePath))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(adminFilePath));
-            using (var fileStream = new FileStream(adminFilePath, FileMode.Create))
-            {
-                await file.OpenReadStream(10000000).CopyToAsync(fileStream);
-            }
+            // Update the form entry for this student to use the student-specific file path
+            studentForm.FilePath = $"/uploads/{student.StudentId}/{studentFileName}";
         }
 
         await DbContext.SaveChangesAsync();
     }
 
 
+
     // Edit File Functionality
     private void EditFile(FileItem file)
     {
+        // Log the file name and query being made
+        Debug.WriteLine($"Searching for file: {file.Name}");
+
+        // Fetch the data from the database and then perform case-insensitive matching in-memory
         var formToEdit = DbContext.Forms
-            .FirstOrDefault(f => f.FilePath == $"/uploads/base/{file.Name}");
+            .AsEnumerable()  // Switch to client-side evaluation
+            .FirstOrDefault(f => f.FilePath.EndsWith($"/{file.Name}", StringComparison.OrdinalIgnoreCase));  // Case-insensitive comparison
 
         if (formToEdit != null)
         {
+            Debug.WriteLine($"Found form with file path: {formToEdit.FilePath}");
+
+            // Populate the fileToEdit model with the data from the form
             fileToEdit = new FileModel
                 {
                     FormName = formToEdit.FormName,
                     Description = formToEdit.ShortDescription,
                     ExpirationDate = formToEdit.ExpirationDate,
-                    AssignedTo = -1 //temporaryily set to 'All'
+                    AssignedTo = -1 // You may need to adjust this based on your actual logic
                 };
 
-            // Store the original file path for reference
+            // Store the original file path for reference during renaming
             originalFilePath = formToEdit.FilePath;
 
+            // Create a new EditContext for form editing
             editContext = new EditContext(fileToEdit);
             isEditFileModalVisible = true;
         }
         else
         {
-            Debug.WriteLine("File not found in the database.");
+            Debug.WriteLine($"File not found in the database for {file.Name}. Double-check the database entries.");
         }
     }
+
+
     
     // Delete File Functionality
     private async Task DeleteFile(FileItem file)
