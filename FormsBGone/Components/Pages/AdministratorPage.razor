@@ -253,14 +253,14 @@ else
 
     private void LoadFilesFromUploadsDirectory()
     {
-        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
         if (Directory.Exists(uploadsFolderPath))
         {
             var files = Directory.GetFiles(uploadsFolderPath);
             fileList = files.Select(file => new FileItem
                 {
                     Name = Path.GetFileName(file),
-                    Link = $"/uploads/{Path.GetFileName(file)}"
+                    Link = $"/uploads/base/{Path.GetFileName(file)}"
                 }).ToList();
         }
     }
@@ -273,7 +273,7 @@ else
 
     // Add File Modal
     private void ShowAddFileModal() => isAddFileModalVisible = true;
-    
+
     private void HideAddFileModal()
     {
         isAddFileModalVisible = false;
@@ -347,15 +347,17 @@ else
         }
 
         string filePath = string.Empty;
+        string filePathWithoutBase = string.Empty;
         if (selectedFile != null)
         {
             filePath = await SaveFileAsync(selectedFile);
             Debug.WriteLine($"File saved to: {filePath}");
+            filePathWithoutBase = filePath.Replace("/base", "");
         }
 
         if (newFile.AssignedTo == -1) // Assign to all students
         {
-            await CreateFormsForAllStudents(filePath);
+            await CreateFormsForAllStudents(filePathWithoutBase, selectedFile);
         }
         else
         {
@@ -418,22 +420,30 @@ else
     // Adds file to uploads folder
     private async Task<string> SaveFileAsync(IBrowserFile file)
     {
-        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
         Directory.CreateDirectory(uploadsFolderPath);
         var filePath = Path.Combine(uploadsFolderPath, file.Name);
 
-        const long maxAllowedSize = 1000000;
+        const long maxAllowedSize = 10000000;
 
         using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
             await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
         }
-        return $"/uploads/{file.Name}";
+        return $"/uploads/base/{file.Name}";
     }
 
-    private async Task CreateFormsForAllStudents(string filePath)
+
+    //big changes here
+    private async Task CreateFormsForAllStudents(string filePath, IBrowserFile file)
     {
-        var maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
+        int maxFormId = 0;
+
+        // Only get the max value if forms exist in the database
+        if (await DbContext.Forms.AnyAsync())
+        {
+            maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
+        }
 
         var students = await DbContext.Students.ToListAsync();
         foreach (var student in students)
@@ -448,8 +458,21 @@ else
                     AssignedStudentId = student.StudentId,
                     FormName = newFile.FormName
                 };
-
             DbContext.Forms.Add(studentForm);
+
+            var studentDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", student.StudentId.ToString());
+            if (!Directory.Exists(studentDirectoryPath))
+            {
+                Directory.CreateDirectory(studentDirectoryPath);
+            }
+            filePath = Path.Combine(studentDirectoryPath, file.Name);
+
+            const long maxAllowedSize = 10000000;
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.OpenReadStream(maxAllowedSize).CopyToAsync(fileStream);
+            }
         }
     }
 
@@ -457,7 +480,7 @@ else
     private void EditFile(FileItem file)
     {
         var formToEdit = DbContext.Forms
-            .FirstOrDefault(f => f.FilePath == $"/uploads/{file.Name}");
+            .FirstOrDefault(f => f.FilePath == $"/uploads/base/{file.Name}");
 
         if (formToEdit != null)
         {
@@ -485,7 +508,7 @@ else
     private async Task DeleteFile(FileItem file)
     {
         // Delete the file from the uploads folder
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", file.Name);
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base", file.Name);
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
@@ -494,7 +517,7 @@ else
 
         // Remove associated entries from the database
         var formsToDelete = await DbContext.Forms
-            .Where(f => f.FilePath == $"/uploads/{file.Name}")
+            .Where(f => f.FilePath == $"/uploads/base/{file.Name}")
             .ToListAsync();
 
         if (formsToDelete.Any())
