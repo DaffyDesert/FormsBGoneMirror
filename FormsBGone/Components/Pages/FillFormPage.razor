@@ -34,12 +34,11 @@
         var form = DbContext.Forms.FirstOrDefault(f => f.FormId == formId && f.AssignedStudentId == studentId);
         if (form != null && !string.IsNullOrEmpty(form.FilePath))
         {
-            // This creates a URL for the iframe to load the PDF
-            return $"/uploads/{studentId}/{Uri.EscapeDataString(form.FilePath)}";
+            // Use the full path directly from the database
+            return form.FilePath;
         }
         return string.Empty;
     }
-
 
     private async Task SubmitForm()
     {
