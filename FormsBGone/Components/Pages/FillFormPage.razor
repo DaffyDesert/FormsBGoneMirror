@@ -1,0 +1,61 @@
+﻿@page "/fillform/{studentId:int}/{formId:int}"
+
+@inject NavigationManager NavManager
+@inject CapstoneContext DbContext
+@using Microsoft.EntityFrameworkCore
+@using System.IO
+@using FormsBGone.Model
+@using Microsoft.AspNetCore.Components
+@using System.Threading.Tasks
+@rendermode InteractiveServer
+
+<h3>Fill Out Form for Student @studentId</h3>
+
+<iframe src="@pdfPath" width="100%" height="800px" type="application/pdf"></iframe>
+
+<div class="button-group">
+    <button class="btn btn-primary" @onclick="SubmitForm">Submit</button>
+    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</div>
+
+@code {
+    [Parameter] public int studentId { get; set; }
+    [Parameter] public int formId { get; set; }
+
+    private string pdfPath;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pdfPath = GetPdfUrl(formId);
+    }
+
+    private string GetPdfUrl(int formId)
+    {
+        var form = DbContext.Forms.FirstOrDefault(f => f.FormId == formId && f.AssignedStudentId == studentId);
+        if (form != null && !string.IsNullOrEmpty(form.FilePath))
+        {
+            // This creates a URL for the iframe to load the PDF
+            return $"/uploads/{studentId}/{Uri.EscapeDataString(form.FilePath)}";
+        }
+        return string.Empty;
+    }
+
+
+    private async Task SubmitForm()
+    {
+        // Here, update the status of the form or handle any other submission logic
+        var form = await DbContext.Forms.FirstOrDefaultAsync(f => f.FormId == formId && f.AssignedStudentId == studentId);
+        if (form != null)
+        {
+            form.Status = "Completed";
+            await DbContext.SaveChangesAsync();
+        }
+
+        NavManager.NavigateTo("/parent");
+    }
+
+    private void Cancel()
+    {
+        NavManager.NavigateTo("/parent"); // Return to the parent page
+    }
+}
