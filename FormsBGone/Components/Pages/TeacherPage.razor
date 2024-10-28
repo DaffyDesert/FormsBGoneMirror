@@ -36,16 +36,20 @@
             </div>
 
             <!-- Filter Dropdown -->
-            <!--
+            
             <div class="filter-dropdown">
                 <select @onchange="OnFilterChange">
                     <option value="">All</option>
-                    <option value="GradeA">Grade A</option>
-                    <option value="GradeB">Grade B</option>
-                    <option value="GradeC">Grade C</option>
+                    <option value="12">12th Grade</option>
+                    <option value="11">11th Grade</option>
+                    <option value="10">10th Grade</option>
+                    <option value="9">9th Grade</option>
+                    <option value="8">8th Grade</option>
+                    <option value="7">7th Grade</option>
+                    <option value="6">6th Grade</option>
+                    <option value="5">5th Grade</option>
                 </select>
-            </div>
-            --> 
+            </div>            
         </div>
     </div>
 
@@ -113,7 +117,7 @@ else
     private List<Student> students = new();
     private List<Student> filteredStudentList = new();
     private List<Form> selectedStudentForms = new();
-
+    private List<Student> filteredStudents;
     private Student selectedStudent;
 
     protected override async Task OnInitializedAsync()
@@ -198,23 +202,33 @@ else
     private void OnSearchInput(ChangeEventArgs e)
     {
         searchQuery = e.Value.ToString();
-        // FilterStudents();
+        FilterStudents();
     }
-
     // private void FilterStudents()
     // {
-    //     // Filter the student list based on the current search query and selected filter
-    //     filteredStudentList = students
-    //         .Where(s => string.IsNullOrEmpty(searchQuery) ||
-    //                     $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-    //         .Where(s => string.IsNullOrEmpty(selectedFilter) || s.Grade == selectedFilter)
-    //         .ToList();
+        // Filter the student list based on the current search query and selected filter
+    //    filteredStudentList = students
+    //        .Where(s => string.IsNullOrEmpty(searchQuery) ||
+    //                    $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+    //                    .Where(s => string.IsNullOrEmpty(selectedFilter) || s.Grade == selectedFilter) // This was for Dropdown filter
+    //                    .ToList();
     // }
+    private void FilterStudents()
+    {
+        int? gradeFilter = int.TryParse(selectedFilter, out var grade) ? grade : (int?)null;
+
+        filteredStudentList = students
+            .Where(s => (string.IsNullOrEmpty(searchQuery) || 
+            $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+                        (!gradeFilter.HasValue || s.Grade == gradeFilter)) // Use parsed grade filter if available
+            .ToList();
+    }
+
 
     private void OnFilterChange(ChangeEventArgs e)
     {
-        selectedFilter = e.Value.ToString();
-        // FilterStudents();
+        selectedFilter = e.Value?.ToString() ?? string.Empty;
+        FilterStudents();
     }
 
     private async Task SignOut()
