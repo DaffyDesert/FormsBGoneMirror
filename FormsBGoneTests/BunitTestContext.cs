@@ -16,6 +16,8 @@ using FormsBGone.States;
 using FormsBGone.Components;
 using Microsoft.Extensions.Hosting;
 using FormsBGone.Controllers;
+using FormsBGone.Components.Pages;
+using Bunit.TestDoubles;
 
 public abstract class BunitTestContext : TestContextWrapper
 {
@@ -34,7 +36,7 @@ public abstract class BunitTestContext : TestContextWrapper
 
 		Services.AddDbContext<CapstoneContext>(options =>
 		{
-			options.UseSqlServer("Server=tcp:capstonebgone.database.windows.net,1433;Initial Catalog=capstone;Persist Security Info=False;User ID=principal;Password=Password1;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+			options.UseSqlServer(config.GetConnectionString("DefaultConnection"));
 		});
 
 		Services.AddAuthentication(options =>
