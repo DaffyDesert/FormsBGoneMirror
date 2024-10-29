@@ -1,0 +1,53 @@
+@attribute [TestClass]
+@inherits BunitTestContext
+@code
+{
+	#region Setup
+	public void SetUpServices()
+	{
+		Services.AddRazorComponents().AddInteractiveServerComponents();
+
+		Services.AddControllers();
+		Services.AddSwaggerGen(c =>
+		{
+			c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "My API", Version = "v1" });
+		});
+
+		Services.AddDbContext<CapstoneContext>(options =>
+		{
+			options.UseSqlServer("Server=tcp:capstonebgone.database.windows.net,1433;Initial Catalog=capstone;Persist Security Info=False;User ID=principal;Password=Password1;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+		});
+
+		Services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+		}).AddJwtBearer(options =>
+		{
+			options.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateIssuerSigningKey = true,
+					ValidateLifetime = true,
+					ValidIssuer = "https://localhost:7123",
+					ValidAudience = "https://localhost:7123",
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSuperSecretKeyThatIsLongEnough"))
+				};
+		});
+		Services.AddScoped<IAccountLogin, AccountLogin>();
+		Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7123") });
+
+		Services.AddScoped<IAccountService, AccountService>();
+	}
+	#endregion
+
+	[TestMethod]
+	public void TestAdminPageRender()
+	{
+		SetUpServices();
+
+		var cut = RenderComponent<AdministratorPage>();
+	}
+
+}
