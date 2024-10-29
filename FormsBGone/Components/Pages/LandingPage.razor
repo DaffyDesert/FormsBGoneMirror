@@ -21,8 +21,8 @@
                 }
 
                 <EditForm Model="@Login" OnValidSubmit="HandleLogin">
-                    <input type="text" placeholder="Username" @bind="Login.Username" />
-                    <input type="password" placeholder="Password" @bind="Login.Password" />
+                    <input id="username" type="text" placeholder="Username" @bind="Login.Username" />
+                    <input id="password" type="password" placeholder="Password" @bind="Login.Password" />
                     <button type="submit" class="btn btn-primary large-btn">Login</button>
                     <ValidationSummary />
                 </EditForm>

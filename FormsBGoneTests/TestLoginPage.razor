@@ -1,0 +1,73 @@
+﻿@attribute [TestClass]
+@inherits BunitTestContext
+@code
+{
+
+	public void LogIn(string username, string password)
+	{
+		var cut = RenderComponent<LandingPage>();
+		var usernameField = cut.Find("#username");
+		var passwordField = cut.Find("#password");
+		var submitButton = cut.Find("button");
+
+		usernameField.Change(username);
+		passwordField.Change(password);
+		submitButton.Click();
+	}
+
+	[TestMethod]
+	public void TestLoginPageRender()
+	{
+		SetUpServices();
+
+		var cut = RenderComponent<LandingPage>();
+	}
+
+	[TestMethod]
+	public void TestLoginAdmin()
+	{
+		string role = "Admin";
+		SetUpServices();
+
+		LogIn("admin3", "password");
+
+		Thread.Sleep(10000);
+
+		var customAuthProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>();
+		if (customAuthProvider == null) Assert.Fail("Failed to retrieve auth provider from Test Services");
+
+		Assert.AreEqual(true, customAuthProvider.IsAuthenticated(role).Result);
+	}
+
+	[TestMethod]
+	public void TestLoginTeacher()
+	{
+		string role = "Teacher";
+		SetUpServices();
+
+		LogIn("twell01", "TWellScho01");
+
+		Thread.Sleep(10000);
+
+		var customAuthProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>();
+		if (customAuthProvider == null) Assert.Fail("Failed to retrieve auth provider from Test Services");
+
+		Assert.AreEqual(true, customAuthProvider.IsAuthenticated(role).Result);
+	}
+
+	[TestMethod]
+	public void TestLoginParent()
+	{
+		string role = "Parent";
+		SetUpServices();
+
+		LogIn("dummy1", "dummy!");
+
+		Thread.Sleep(10000);
+
+		var customAuthProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>();
+		if (customAuthProvider == null) Assert.Fail("Failed to retrieve auth provider from Test Services");
+
+		Assert.AreEqual(true, customAuthProvider.IsAuthenticated(role).Result);
+	}
+}
