@@ -35,9 +35,12 @@
 
 		// Validate
 		Assert.AreEqual(true, cut.Instance.Authorized);
+		Assert.IsNotNull(cut.Instance.currentAdmin);
+		Assert.IsNotNull(cut.Instance.editContext);
+		Assert.IsNotNull(cut.Instance.messageStore);
 
 		// Logout
-		customAuthStateProvider.Logout();
+		customAuthStateProvider.Logout().Wait();
 	}
 
 	[TestMethod]
@@ -62,8 +65,60 @@
 		Assert.AreEqual(false, cut.Instance.Authorized);
 
 		// Logout
-		customAuthStateProvider.Logout();
+		customAuthStateProvider.Logout().Wait();
 	}
 
+	[TestMethod]
+	public void TestGetCurrentAdminDetails()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "admin3",
+				Password = "password"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<AdministratorPage>();
+
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var result = cut.Instance.GetCurrentAdminDetails().Result;
+
+		Assert.AreEqual("admin3@example.com", result.Email);
+		Assert.AreEqual(3, result.AdminId);
+		Assert.AreEqual("Admin", result.FirstName);
+		Assert.AreEqual("R", result.MiddleInitial);
+		Assert.AreEqual("Three", result.LastName);
+	}
+
+	[TestMethod]
+	public void TestLoadFilesFromUploadsDirectory()
+	{
+		throw new NotImplementedException();
+
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "admin3",
+				Password = "password"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<AdministratorPage>();
+		cut.Instance.LoadFilesFromUploadsDirectory();
+
+		Assert.AreNotEqual(0, cut.Instance.fileList.Count);
+	}
 
 }
