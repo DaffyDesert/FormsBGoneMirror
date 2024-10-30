@@ -8,6 +8,10 @@
 		// Set up
 		SetUpServices();
 
+		// Logout
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.Logout().Wait();
+
 		// Act
 		var cut = RenderComponent<AdministratorPage>();
 

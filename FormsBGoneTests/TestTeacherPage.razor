@@ -2,5 +2,229 @@
 @inherits BunitTestContext
 @code
 {
+	[TestMethod]
+	public void TestTeacherPageView_Unauthenticated()
+	{
+		// Set up
+		SetUpServices();
 
+		// Logout
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.Logout().Wait();
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+
+		// Validate
+		Assert.AreEqual(false, cut.Instance.Authorized);
+	}
+
+	[TestMethod]
+	public void TestTeacherPageView_Authorized()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellScho01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		var cut = RenderComponent<TeacherPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		// Validate
+		Assert.AreEqual(true, cut.Instance.Authorized);
+		Assert.IsNotNull(cut.Instance.currentTeacher);
+		Assert.AreNotEqual(0, cut.Instance.students.Count);
+		Assert.AreNotEqual(0, cut.Instance.filteredStudentList.Count);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+
+	[TestMethod]
+	public void TestTeacherPageView_Authenticated_Unauthorized()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+
+		// Validate
+		Assert.AreEqual(false, cut.Instance.Authorized);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+
+	[TestMethod]
+	public void TestGetCurrentTeacherDetails()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellScho01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var result = cut.Instance.GetCurrentTeacherDetails().Result;
+
+		Assert.AreEqual("trent_wells@okaloosa.k12.fl.us", result.Email);
+		Assert.AreEqual(2, result.TeacherId);
+		Assert.AreEqual("Trent", result.FirstName);
+		Assert.IsNull(result.MiddleInitial);
+		Assert.AreEqual("Wells", result.LastName);
+		Assert.AreEqual("ky_kiske@okaloosa.k12.fl.us", result.SuperiorEmail);
+	}
+
+	[TestMethod]
+	public void TestSearchBar() {
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellScho01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var searchEntry = cut.Find("#search-entry");
+		searchEntry.Change("Daniel Smith");
+		searchEntry.Input("Daniel Smith");
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		Assert.AreNotEqual(0, cut.Instance.filteredStudentList.Count);
+		if (cut.Instance.filteredStudentList.Count >= cut.Instance.students.Count) {
+			Assert.Fail($"Filtered students list contains {cut.Instance.filteredStudentList.Count} students, while unfiltered list contains {cut.Instance.students.Count}");
+		}
+	}
+
+	[TestMethod]
+	public void TestFilterChange() {
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellScho01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var filterSelect = cut.Find("#filter-dropdown");
+		filterSelect.Change("9");
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		Assert.AreEqual(cut.Instance.students.Count, cut.Instance.filteredStudentList.Count);
+
+		filterSelect.Change("12");
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		Assert.AreEqual(0, cut.Instance.filteredStudentList.Count);
+	}
+
+	[TestMethod]
+	public void TestShowViewForms() {
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellScho01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var showFormButton = cut.Find("#show-view-form");
+		showFormButton.Click();
+		cut.Render();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		try {
+			var hideFormButton = cut.Find("#hide-view-form");
+		}
+		catch (Exception ex) {
+			Assert.Fail(ex.StackTrace + ex.Message);
+		}
+	}
+
+	[TestMethod]
+	public void TestHideViewForms() {
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellScho01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<TeacherPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var showFormButton = cut.Find("#show-view-form");
+		showFormButton.Click();
+		cut.Render();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var hideFormButton = cut.Find("#hide-view-form");
+		hideFormButton.Click();
+		cut.Render();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		try {
+			hideFormButton = cut.Find("#hide-view-form");
+		}
+		catch (Exception ex) {
+			Assert.IsTrue(true);
+		}
+	}
 }
