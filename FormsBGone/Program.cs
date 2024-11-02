@@ -8,20 +8,15 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FormsBGone.Controllers;
 using Syncfusion.Licensing;
 
 var builder = WebApplication.CreateBuilder(args);
 SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NDaF5cWWtCf1JpRnxbf1x0ZFBMY11bRXZPIiBoS35RckRjW3hfd3dUR2BeVEV1 ");
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-	.AddInteractiveServerComponents();
-
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen(c =>
-{
-	c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "My API", Version = "v1" });
-});
 
 builder.Services.AddDbContext<CapstoneContext>(options =>
 {
@@ -48,7 +43,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IAccountLogin, AccountLogin>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration["Jwt:Issuer"]!) });
 
-builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAccountController, AccountController>();
+builder.Services.AddScoped<IAccountService, AccountService>();  
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 var app = builder.Build();
 
@@ -64,11 +60,6 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-	c.SwaggerEndpoint("/swagger/v1/swagger.json", "Capstone API V1");
-});
 
 app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode();

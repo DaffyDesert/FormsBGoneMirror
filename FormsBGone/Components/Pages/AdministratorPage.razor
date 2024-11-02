@@ -13,7 +13,6 @@
 @using Microsoft.AspNetCore.Authorization;
 
 @inject IAccountService accountService
-@inject IJSRuntime js
 @inject NavigationManager NavManager
 @inject CapstoneContext DbContext
 @inject AuthenticationStateProvider AuthStateProvider
@@ -167,21 +166,21 @@ else
 
 
 @code {
-    private bool Authorized = false;
-    private Administrator currentAdmin;
+    public bool Authorized = false;
+    public Administrator currentAdmin = new Administrator();
     private FileModel newFile = new FileModel();
     private FileModel fileToEdit;
     private FileItem fileToDelete;
 
-    private List<FileItem> fileList = new();
+    public List<FileItem> fileList = new();
 
-    private bool isAddFileModalVisible = false;
-    private bool isEditFileModalVisible = false;
-    private bool isDeleteConfirmationVisible = false;
+    public bool isAddFileModalVisible = false;
+    public bool isEditFileModalVisible = false;
+    public bool isDeleteConfirmationVisible = false;
 
     private IBrowserFile selectedFile;
-    private EditContext editContext;
-    private ValidationMessageStore messageStore;
+    public EditContext editContext = new EditContext(new FileModel());
+    public ValidationMessageStore messageStore = new(new EditContext(new FileModel()));
 
     private string originalFilePath;
     private string fileError = string.Empty;
@@ -227,7 +226,7 @@ else
         }
     }
 
-    private async Task<Administrator> GetCurrentAdminDetails()
+    public async Task<Administrator> GetCurrentAdminDetails()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -246,7 +245,7 @@ else
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
-    private void LoadFilesFromUploadsDirectory()
+    public void LoadFilesFromUploadsDirectory()
     {
         var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
         if (Directory.Exists(uploadsFolderPath))

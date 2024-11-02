@@ -7,9 +7,7 @@ using static FormsBGone.Responses.CustomResponses;
 
 namespace FormsBGone.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountController : IAccountController
     {
         private readonly IAccountLogin accountRepo;
 
@@ -18,26 +16,22 @@ namespace FormsBGone.Controllers
             this.accountRepo = accountRepo;
         }
 
-        [HttpPost("register")]
-        public async Task<ActionResult<RegistrationResponse>> RegisterAsync(RegisterDTO model)
+        public async Task<RegistrationResponse> RegisterAsync(RegisterDTO model)
         {
-            var result = await accountRepo.RegisterAsync(model);
-            return Ok(result);
+            return await accountRepo.RegisterAsync(model);
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<LoginResponse>> LoginAsync(LoginDTO model)
+        public async Task<LoginResponse> LoginAsync(LoginDTO model)
         {
             var result = await accountRepo.LoginAsync(model);
-            return Ok(result);
+            return result;
         }
 
-        [HttpPost("refresh-token")]
         [AllowAnonymous]
-        public ActionResult<LoginResponse> RefreshToken(UserSession model)
+        public LoginResponse RefreshToken(UserSession model)
         {
             var result = accountRepo.RefreshToken(model);
-            return Ok(result);
+            return result;
         }
     }
 }

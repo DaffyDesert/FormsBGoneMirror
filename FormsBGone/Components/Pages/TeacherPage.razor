@@ -32,13 +32,13 @@
         <div class="search-container">
             <!-- Search Bar -->
             <div class="search-bar">
-                <input type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
+                <input id="search-entry" type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
             </div>
 
             <!-- Filter Dropdown -->
             
             <div class="filter-dropdown">
-                <select @onchange="OnFilterChange">
+                <select id="filter-dropdown" @onchange="OnFilterChange">
                     <option value="">All</option>
                     <option value="12">12th Grade</option>
                     <option value="11">11th Grade</option>
@@ -60,7 +60,7 @@
             {
                 <li class="student-item">
                     <span>@($"{student.FirstName} {student.LastName}")</span>
-                    <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(student.StudentId)">View Forms</button>
+                    <button id="show-view-form" class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(student.StudentId)">View Forms</button>
                 </li>
             }
         </ul>
@@ -97,7 +97,7 @@
                         <p>No forms found for @selectedStudent.FirstName @selectedStudent.LastName.</p>
                     </div>
                 }
-                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
+                <button id="hide-view-form" class="btn btn-close" @onclick="HideViewFormsModal"></button>
             </div>
         </div>
     }
@@ -108,14 +108,14 @@ else
 }
 
 @code {
-    private bool Authorized = false;
+    public bool Authorized = false;
     private bool isViewFormsModalVisible = false;
     private string searchQuery = string.Empty;
     private string selectedFilter = string.Empty;
-    private Teacher currentTeacher;
+    public Teacher currentTeacher;
 
-    private List<Student> students = new();
-    private List<Student> filteredStudentList = new();
+    public List<Student> students = new();
+    public List<Student> filteredStudentList = new();
     private List<Form> selectedStudentForms = new();
     private List<Student> filteredStudents;
     private Student selectedStudent;
@@ -143,7 +143,7 @@ else
         }
     }
 
-    private async Task<Teacher> GetCurrentTeacherDetails()
+    public async Task<Teacher> GetCurrentTeacherDetails()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;

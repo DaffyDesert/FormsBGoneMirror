@@ -52,13 +52,9 @@ namespace FormsBGoneTests
 				Password = "plswork"
 			};
 
-			ObjectResult result1 = (ObjectResult)((await controller.LoginAsync(login1)).Result!);
-			ObjectResult result2 = (ObjectResult)((await controller.LoginAsync(login2)).Result!);
-			ObjectResult result3 = (ObjectResult)((await controller.LoginAsync(login3)).Result!);
-
-			var value1 = ((LoginResponse)(result1.Value!));
-			var value2 = ((LoginResponse)(result2.Value!));
-			var value3 = ((LoginResponse)(result3.Value!));
+			var value1 = await controller.LoginAsync(login1);
+			var value2 = await controller.LoginAsync(login2);
+			var value3 = await controller.LoginAsync(login3);
 
 			Assert.AreEqual(value1.Flag, false);
 			Assert.AreEqual(value1.Message, "User not found.");
@@ -105,8 +101,7 @@ namespace FormsBGoneTests
 
 			try
 			{
-				ObjectResult result1 = (ObjectResult)((await controller.RegisterAsync(register1)).Result!);
-				var value1 = ((RegistrationResponse)(result1.Value!));
+				var value1 = await controller.RegisterAsync(register1);
 
 				Assert.AreEqual(value1.Flag, false);
 				Assert.AreEqual(value1.Message, "User personal info not found in our database.");
@@ -114,13 +109,9 @@ namespace FormsBGoneTests
 				context.Add(newParent);
 				context.SaveChanges();
 
-				result1 = (ObjectResult)((await controller.RegisterAsync(register1)).Result!);
-				var result2 = (ObjectResult)((await controller.RegisterAsync(register2)).Result!);
-				var result3 = (ObjectResult)((await controller.RegisterAsync(register3)).Result!);
-
-				value1 = ((RegistrationResponse)(result1.Value!));
-				var value2 = ((RegistrationResponse)(result2.Value!));
-				var value3 = ((RegistrationResponse)(result3.Value!));
+				value1 = await controller.RegisterAsync(register1);
+				var value2 = await controller.RegisterAsync(register2);
+				var value3 = await controller.RegisterAsync(register3);
 
 				Assert.AreEqual(value1.Flag, false);
 				Assert.AreEqual(value1.Message, "Passwords do not match.");
