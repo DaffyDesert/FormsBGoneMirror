@@ -118,7 +118,7 @@
 
 		// Act
 		var cut = RenderComponent<AdministratorPage>();
-		cut.Instance.LoadFilesFromUploadsDirectory(Path.Combine(Directory.GetCurrentDirectory(), "..\\..\\..\\wwwroot\\uploads\\base\\"));
+		cut.Instance.LoadFilesFromUploadsDirectory(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "wwwroot", "uploads", "base"));
 
 		Assert.AreNotEqual(0, cut.Instance.fileList.Count);
 	}
