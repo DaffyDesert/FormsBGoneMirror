@@ -7,6 +7,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using System.Threading.Tasks;
 @using System.Security.Claims;
+@inject IWebHostEnvironment Env
+
 @rendermode InteractiveServer
 
 @inject CapstoneContext DbContext
@@ -76,7 +78,7 @@
                                     </span>
                                     @if (form.Status != "Completed")
                                     {
-                                        <button class="btn btn-fill-form" @onclick="() => RedirectToFillFormPage(selectedChild.StudentId, form.FormId)">Fill Form</button>
+                                        <button class="btn btn-fill-form" @onclick="() => ShowFillFormModal(form.FormId, selectedChild.StudentId)">Fill Form</button>
                                     }
                                 </li>
                             }
@@ -89,10 +91,38 @@
                     <p>No forms found for @selectedChild.FirstName @selectedChild.LastName.</p>
                 }
 
-                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
+                <button class="btn btn-close" @onclick="HideViewFormsModal">Close</button>
             </div>
         </div>
     }
+
+    <!-- Fill Form Modal -->
+    @if (isFillFormModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3>Fill Out Form</h3>
+
+                @if (!string.IsNullOrEmpty(pdfDownloadUrl) && !string.IsNullOrEmpty(pdfFileName))
+                {
+                    <a href="@pdfDownloadUrl" download="@pdfFileName" target="_blank">@pdfFileName</a>
+                }
+                else
+                {
+                    <p>Loading form...</p>
+                }
+
+                <div class="upload-section">
+                    <InputFile OnChange="HandleFileUpload" />
+                    <button class="btn btn-primary" @onclick="SubmitForm" disabled="@(isFileSelected == false)">Submit</button>
+                    <button class="btn btn-secondary" @onclick="HideFillFormModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+
 }
 else
 {
@@ -102,14 +132,20 @@ else
 @code {
     private bool Authorized = false;
     private bool isViewFormsModalVisible = false;
-    private bool isPdfViewerVisible = false;
-    private string pdfUrl = string.Empty;
+    private bool isFillFormModalVisible = false;
+    private bool isFileSelected = false;
+    private IBrowserFile uploadedFile;
     private string searchQuery = string.Empty;
     private Parent currentParent;
     private List<Student> children = new();
     private List<Student> filteredChildren = new();
     private List<Form> selectedChildForms = new();
     private Student selectedChild;
+    private int selectedFormId;
+    private int selectedStudentId;
+    private string pdfDownloadUrl = null;
+    private string pdfFileName = null;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,8 +206,9 @@ else
 
     private async Task ShowViewFormsModal(int studentId)
     {
-        await LoadChildForms(studentId);
+        await LoadChildForms(studentId); // Await loading of child forms
         isViewFormsModalVisible = true;
+        StateHasChanged();
     }
 
     private async Task LoadChildForms(int studentId)
@@ -186,11 +223,77 @@ else
         }
     }
 
-    private Task RedirectToFillFormPage(int studentId, int formId)
+
+    private void ShowFillFormModal(int formId, int studentId)
     {
-        var url = $"/fillform/{studentId}/{formId}";
-        NavManager.NavigateTo(url);
-        return Task.CompletedTask;
+        selectedFormId = formId;
+        selectedStudentId = studentId;
+
+        // Retrieve form details from the database
+        var form = DbContext.Forms.FirstOrDefault(f => f.FormId == formId && f.AssignedStudentId == studentId);
+        if (form != null)
+        {
+            // Extract only the file name to avoid duplicating the path
+            var fileName = Path.GetFileName(form.FilePath);
+
+            // Construct the full path using Directory.GetCurrentDirectory() and wwwroot
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentId.ToString(), fileName);
+            Console.WriteLine($"Adjusted fullPath using GetCurrentDirectory: {fullPath}"); // Debugging line
+
+            if (System.IO.File.Exists(fullPath))
+            {
+                // Set the download URL for the client and file name
+                pdfDownloadUrl = $"/uploads/{studentId}/{Uri.EscapeDataString(fileName)}"; // Use relative URL for Blazor
+                pdfFileName = fileName;
+
+                Console.WriteLine($"[ShowFillFormModal] pdfDownloadUrl set to: {pdfDownloadUrl}");
+                Console.WriteLine($"[ShowFillFormModal] pdfFileName set to: {pdfFileName}");
+            }
+            else
+            {
+                Console.WriteLine($"[ShowFillFormModal] File not found at: {fullPath}");
+                pdfDownloadUrl = null;
+                pdfFileName = null;
+            }
+        }
+
+        isFillFormModalVisible = true;
+        StateHasChanged();
+    }
+
+
+
+
+
+
+
+    private void HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        uploadedFile = e.File;
+        isFileSelected = uploadedFile != null;
+    }
+
+    private async Task SubmitForm()
+    {
+        if (uploadedFile != null)
+        {
+            var projectDirectory = Directory.GetCurrentDirectory();
+            var pdfSavePath = Path.Combine(projectDirectory, "wwwroot", pdfDownloadUrl.TrimStart('/'));
+
+            using (var stream = new FileStream(pdfSavePath, FileMode.Create))
+            {
+                await uploadedFile.OpenReadStream().CopyToAsync(stream);
+            }
+
+            var formEntry = await DbContext.Forms.FirstOrDefaultAsync(f => f.FormId == selectedFormId && f.AssignedStudentId == selectedStudentId);
+            if (formEntry != null)
+            {
+                formEntry.Status = "Completed";
+                await DbContext.SaveChangesAsync();
+            }
+
+            HideFillFormModal();
+        }
     }
 
     private void HideViewFormsModal()
@@ -200,15 +303,12 @@ else
         selectedChild = null;
     }
 
-    private async Task SubmitForm()
+    private void HideFillFormModal()
     {
-        var form = selectedChildForms.FirstOrDefault();
-        if (form != null)
-        {
-            form.Status = "Completed";
-            await DbContext.SaveChangesAsync();
-            isPdfViewerVisible = false;
-        }
+        isFillFormModalVisible = false;
+        pdfDownloadUrl = string.Empty;
+        uploadedFile = null;
+        isFileSelected = false;
     }
 
     private async Task SignOut()
