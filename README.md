@@ -16,11 +16,11 @@
 * <span style="color: red;">(Not Started)</span> **Student/Staff Management:** Manage student and teacher access levels with full CRUD operations.
 
 ### Teacher
-* <span style="color: red;">(Not Started)</span> **View Form Status:** View the completion status of student forms, with the ability to filter students by class or search by name for easier management.
+* <span style="color: green;">(Complete)</span> **View Form Status:** View the completion status of student forms, with the ability to filter students by class or search by name for easier management.
 * <span style="color: red;">(Not Started)</span> **Specialized Form Request** ***(Optional):*** Request special forms (e.g., field trip or movie forms) with admin approval required.
 
 ### Parent
-* <span style="color: red;">(Not Started)</span> **Fill in Forms:** Log in, view, and complete forms for their children online. 
+* <span style="color: green;">(Complete)</span> **Fill in Forms:** Log in, view, and complete forms for their children online. 
 
 ## Getting Started
 
@@ -82,4 +82,4 @@
 
 ## Demonstration Video
 
-[Watch the demo video of Sprint 1](https://youtu.be/IM8LEjR_4o4)
+[Watch the demo video of Sprint 2](https://www.youtube.com/watch?v=jUfXuz36ozI)
