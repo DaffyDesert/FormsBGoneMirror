@@ -166,6 +166,7 @@ else
 
 
 @code {
+    public string UploadFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
     public bool Authorized = false;
     public Administrator currentAdmin = new Administrator();
     private FileModel newFile = new FileModel();
@@ -245,9 +246,11 @@ else
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
-    public void LoadFilesFromUploadsDirectory()
+    public void LoadFilesFromUploadsDirectory(string uploadsFolderPath = "")
     {
-        var uploadsFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
+        if (uploadsFolderPath == "")
+            uploadsFolderPath = UploadFilePath;
+
         if (Directory.Exists(uploadsFolderPath))
         {
             var files = Directory.GetFiles(uploadsFolderPath);
