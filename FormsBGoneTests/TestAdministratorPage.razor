@@ -104,8 +104,6 @@
 	[TestMethod]
 	public void TestLoadFilesFromUploadsDirectory()
 	{
-		throw new NotImplementedException();
-
 		// Set up
 		SetUpServices();
 
@@ -120,7 +118,7 @@
 
 		// Act
 		var cut = RenderComponent<AdministratorPage>();
-		cut.Instance.LoadFilesFromUploadsDirectory();
+		cut.Instance.LoadFilesFromUploadsDirectory(Path.Combine(Directory.GetCurrentDirectory(), "..\\..\\..\\..\\FormsBGone\\wwwroot\\uploads\\base\\"));
 
 		Assert.AreNotEqual(0, cut.Instance.fileList.Count);
 	}
