@@ -306,20 +306,53 @@ h3 {
 }
 
 .modal {
-    display: block;
-    position: relative;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     padding: 30px;
     width: 90%;
-    max-width: 1100px;
-    max-height: 90vh;
+    max-width: 700px;
+    max-height: 70vh;
     overflow-y: auto;
+    position: relative;
+}
+
+    .modal h3 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #092daa;
+        margin-bottom: 20px;
+    }
+
+
+.download-link {
+    font-weight: bold;
+    color: #004080;
+    text-decoration: none;
+}
+
+.file-input-inline {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Button Group Positioned at Bottom Right */
+.button-group-bottom {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
 }
 
 iframe {
     border: none;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 .btn-primary {

@@ -28,8 +28,6 @@
         <div class="student-directory">
             <h2>Your Children</h2>
         </div>
-
-        <!-- Search Bar -->
         <div class="search-container">
             <div class="search-bar">
                 <input type="text" placeholder="Search children..." @bind="@searchQuery" @oninput="OnSearchInput" />
@@ -37,7 +35,6 @@
         </div>
     </div>
 
-    <!-- Student List -->
     <div class="student-list-container">
         @if (filteredChildren.Any())
         {
@@ -57,7 +54,6 @@
         }
     </div>
 
-    <!-- Forms Modal -->
     @if (isViewFormsModalVisible)
     {
         <div class="modal-overlay">
@@ -69,7 +65,7 @@
                     <ul class="form-list">
                         @foreach (var form in selectedChildForms)
                         {
-                            @if (!string.IsNullOrWhiteSpace(form.FormName)) // Check if the form name is not empty
+                            @if (!string.IsNullOrWhiteSpace(form.FormName))
                             {
                                 <li class="form-item">
                                     <strong>@form.FormName</strong>
@@ -91,38 +87,39 @@
                     <p>No forms found for @selectedChild.FirstName @selectedChild.LastName.</p>
                 }
 
-                <button class="btn btn-close" @onclick="HideViewFormsModal">Close</button>
+                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
             </div>
         </div>
     }
 
-    <!-- Fill Form Modal -->
     @if (isFillFormModalVisible)
     {
         <div class="modal-overlay">
             <div class="modal">
+                <button class="btn-close" @onclick="HideFillFormModal"></button>
                 <h3>Fill Out Form</h3>
-
-                @if (!string.IsNullOrEmpty(pdfDownloadUrl) && !string.IsNullOrEmpty(pdfFileName))
-                {
-                    <a href="@pdfDownloadUrl" download="@pdfFileName" target="_blank">@pdfFileName</a>
-                }
-                else
-                {
-                    <p>Loading form...</p>
-                }
-
-                <div class="upload-section">
-                    <InputFile OnChange="HandleFileUpload" />
-                    <button class="btn btn-primary" @onclick="SubmitForm" disabled="@(isFileSelected == false)">Submit</button>
-                    <button class="btn btn-secondary" @onclick="HideFillFormModal">Cancel</button>
+                <p>
+                    <strong>Form Download:</strong>
+                    @if (!string.IsNullOrEmpty(pdfDownloadUrl) && !string.IsNullOrEmpty(pdfFileName))
+                    {
+                        <a href="@pdfDownloadUrl" download="@pdfFileName" class="download-link">@pdfFileName</a>
+                    }
+                    else
+                    {
+                        <span class="loading-message">Loading form...</span>
+                    }
+                </p>
+                <p>
+                    <strong>Form Upload:</strong>
+                    <InputFile OnChange="HandleFileUpload" class="file-input-inline" />
+                </p>
+                <div class="button-group-bottom">
+                    <button class="btn-secondary" @onclick="HideFillFormModal">Cancel</button>
+                    <button class="btn-primary" @onclick="SubmitForm" disabled="@(isFileSelected == false)">Submit</button>
                 </div>
             </div>
         </div>
     }
-
-
-
 }
 else
 {
@@ -159,8 +156,8 @@ else
                 currentParent = await GetCurrentParentDetails();
                 if (currentParent != null)
                 {
-                    children = currentParent.Students.ToList(); // Fetch children assigned to this parent
-                    filteredChildren = children; // Initial load shows all children
+                    children = currentParent.Students.ToList();
+                    filteredChildren = children;
                 }
             }
             catch (Exception ex)
@@ -206,7 +203,7 @@ else
 
     private async Task ShowViewFormsModal(int studentId)
     {
-        await LoadChildForms(studentId); // Await loading of child forms
+        await LoadChildForms(studentId);
         isViewFormsModalVisible = true;
         StateHasChanged();
     }
@@ -218,7 +215,7 @@ else
         if (selectedChild != null)
         {
             selectedChildForms = await DbContext.Forms
-                .Where(f => f.AssignedStudentId == studentId && !string.IsNullOrEmpty(f.FormName)) // Exclude empty forms
+                .Where(f => f.AssignedStudentId == studentId && !string.IsNullOrEmpty(f.FormName))
                 .ToListAsync();
         }
     }
@@ -229,23 +226,17 @@ else
         selectedFormId = formId;
         selectedStudentId = studentId;
 
-        // Retrieve form details from the database
         var form = DbContext.Forms.FirstOrDefault(f => f.FormId == formId && f.AssignedStudentId == studentId);
         if (form != null)
         {
-            // Extract only the file name to avoid duplicating the path
             var fileName = Path.GetFileName(form.FilePath);
-
-            // Construct the full path using Directory.GetCurrentDirectory() and wwwroot
             var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentId.ToString(), fileName);
-            Console.WriteLine($"Adjusted fullPath using GetCurrentDirectory: {fullPath}"); // Debugging line
+            Console.WriteLine($"Adjusted fullPath using GetCurrentDirectory: {fullPath}");
 
             if (System.IO.File.Exists(fullPath))
             {
-                // Set the download URL for the client and file name
-                pdfDownloadUrl = $"/uploads/{studentId}/{Uri.EscapeDataString(fileName)}"; // Use relative URL for Blazor
+                pdfDownloadUrl = $"/uploads/{studentId}/{Uri.EscapeDataString(fileName)}";
                 pdfFileName = fileName;
-
                 Console.WriteLine($"[ShowFillFormModal] pdfDownloadUrl set to: {pdfDownloadUrl}");
                 Console.WriteLine($"[ShowFillFormModal] pdfFileName set to: {pdfFileName}");
             }
@@ -260,12 +251,6 @@ else
         isFillFormModalVisible = true;
         StateHasChanged();
     }
-
-
-
-
-
-
 
     private void HandleFileUpload(InputFileChangeEventArgs e)
     {
