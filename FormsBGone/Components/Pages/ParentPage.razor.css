@@ -228,39 +228,50 @@ h3 {
     }
 
 .status-box {
-    min-width: 100px; /* Ensure that all status boxes have the same minimum width */
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
     text-align: center;
+    min-width: 100px;
+    display: inline-block;
+    color: white;
 }
 
 /* Status Colors */
 .status-assigned {
-    background-color: #808080;
+    background-color: #808080; /* Grey for Assigned */
 }
 
 .status-not-reviewed {
-    background-color: #ff0000;
+    background-color: #ff0000; /* Red for Not Reviewed */
 }
 
 .status-complete {
-    background-color: #008000;
+    background-color: #008000; /* Green for Complete */
 }
 
 .status-unknown {
-    background-color: #cccccc;
+    background-color: #cccccc; /* Light grey for unknown statuses */
     color: black;
 }
 
 .btn-fill-form {
-    background-color: #008000;
+    background-color: #808080;
     color: white;
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    min-width: 100px;
+    display: inline-block;
+    color: white;
+    font-size: 20px;
 }
 
     .btn-fill-form:hover {
-        background-color: #006600;
+        background-color: #a0a0a0;
     }
 
 .no-forms {

@@ -69,10 +69,13 @@
                             {
                                 <li class="form-item">
                                     <strong>@form.FormName</strong>
-                                    <span class="status-box @GetStatusClass(form.Status)">
-                                        @form.Status
-                                    </span>
-                                    @if (form.Status != "Completed")
+                                    @if (form.Status == "Completed")
+                                    {
+                                        <span class="status-box @GetStatusClass(form.Status)">
+                                            @form.Status
+                                        </span>
+                                    }
+                                    else 
                                     {
                                         <button class="btn btn-fill-form" @onclick="() => ShowFillFormModal(form.FormId, selectedChild.StudentId)">Fill Form</button>
                                     }
@@ -309,7 +312,7 @@ else
         {
             "Assigned" => "status-assigned",
             "Not Reviewed" => "status-not-reviewed",
-            "Completed" => "status-completed",
+            "Completed" => "status-complete",
             _ => "status-unknown"
         };
     }
