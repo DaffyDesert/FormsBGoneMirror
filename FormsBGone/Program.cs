@@ -9,8 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FormsBGone.Controllers;
+using Syncfusion.Licensing;
 
 var builder = WebApplication.CreateBuilder(args);
+SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NDaF5cWWtCf1JpRnxbf1x0ZFBMY11bRXZPIiBoS35RckRjW3hfd3dUR2BeVEV1 ");
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();

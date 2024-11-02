@@ -1,29 +1,316 @@
 ﻿@page "/parent"
-@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using FormsBGone.Model
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Authorization
+@using System.Threading.Tasks;
+@using System.Security.Claims;
+@inject IWebHostEnvironment Env
+
+@rendermode InteractiveServer
+
+@inject CapstoneContext DbContext
 @inject AuthenticationStateProvider AuthStateProvider
-@inject HttpClient client
+@inject NavigationManager NavManager
 
 @if (Authorized)
 {
-
     <div class="header">
-        <h1>Welcome, Parent!</h1>
+        <h1>Welcome, @($"{currentParent?.FirstName} {currentParent?.LastName}")!</h1>
+        <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
     </div>
+
+    <hr />
+
+    <div class="header-container">
+        <div class="student-directory">
+            <h2>Your Children</h2>
+        </div>
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" placeholder="Search children..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+        </div>
+    </div>
+
+    <div class="student-list-container">
+        @if (filteredChildren.Any())
+        {
+            <ul class="student-list">
+                @foreach (var child in filteredChildren)
+                {
+                    <li class="student-item">
+                        <span>@($"{child.FirstName} {child.LastName}")</span>
+                        <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(child.StudentId)">View Forms</button>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No children found.</p>
+        }
+    </div>
+
+    @if (isViewFormsModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3>Form Directory: @selectedChild?.FirstName @selectedChild?.LastName</h3>
+
+                @if (selectedChildForms?.Any() == true)
+                {
+                    <ul class="form-list">
+                        @foreach (var form in selectedChildForms)
+                        {
+                            @if (!string.IsNullOrWhiteSpace(form.FormName))
+                            {
+                                <li class="form-item">
+                                    <strong>@form.FormName</strong>
+                                    <span class="status-box @GetStatusClass(form.Status)">
+                                        @form.Status
+                                    </span>
+                                    @if (form.Status != "Completed")
+                                    {
+                                        <button class="btn btn-fill-form" @onclick="() => ShowFillFormModal(form.FormId, selectedChild.StudentId)">Fill Form</button>
+                                    }
+                                </li>
+                            }
+                        }
+
+                    </ul>
+                }
+                else
+                {
+                    <p>No forms found for @selectedChild.FirstName @selectedChild.LastName.</p>
+                }
+
+                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
+            </div>
+        </div>
+    }
+
+    @if (isFillFormModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <button class="btn-close" @onclick="HideFillFormModal"></button>
+                <h3>Fill Out Form</h3>
+                <p>
+                    <strong>Form Download:</strong>
+                    @if (!string.IsNullOrEmpty(pdfDownloadUrl) && !string.IsNullOrEmpty(pdfFileName))
+                    {
+                        <a href="@pdfDownloadUrl" download="@pdfFileName" class="download-link">@pdfFileName</a>
+                    }
+                    else
+                    {
+                        <span class="loading-message">Loading form...</span>
+                    }
+                </p>
+                <p>
+                    <strong>Form Upload:</strong>
+                    <InputFile OnChange="HandleFileUpload" class="file-input-inline" />
+                </p>
+                <div class="button-group-bottom">
+                    <button class="btn-secondary" @onclick="HideFillFormModal">Cancel</button>
+                    <button class="btn-primary" @onclick="SubmitForm" disabled="@(isFileSelected == false)">Submit</button>
+                </div>
+            </div>
+        </div>
+    }
 }
 else
 {
     <p>Error 401: Unauthorized</p>
 }
 
-
 @code {
     private bool Authorized = false;
+    private bool isViewFormsModalVisible = false;
+    private bool isFillFormModalVisible = false;
+    private bool isFileSelected = false;
+    private IBrowserFile uploadedFile;
+    private string searchQuery = string.Empty;
+    private Parent currentParent;
+    private List<Student> children = new();
+    private List<Student> filteredChildren = new();
+    private List<Form> selectedChildForms = new();
+    private Student selectedChild;
+    private int selectedFormId;
+    private int selectedStudentId;
+    private string pdfDownloadUrl = null;
+    private string pdfFileName = null;
+
+
     protected override async Task OnInitializedAsync()
     {
         var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
         Authorized = await customAuthProvider.IsAuthenticated("Parent");
-    }
-    //everything else goes here for code
 
+        if (Authorized)
+        {
+            try
+            {
+                currentParent = await GetCurrentParentDetails();
+                if (currentParent != null)
+                {
+                    children = currentParent.Students.ToList();
+                    filteredChildren = children;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving parent data: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task<Parent> GetCurrentParentDetails()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                return await DbContext.Parents
+                    .Include(p => p.Students)
+                    .ThenInclude(s => s.Forms)
+                    .FirstOrDefaultAsync(p => p.Email == email);
+            }
+        }
+
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        FilterChildren();
+    }
+
+    private void FilterChildren()
+    {
+        filteredChildren = children
+            .Where(c => string.IsNullOrEmpty(searchQuery) || $"{c.FirstName} {c.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private async Task ShowViewFormsModal(int studentId)
+    {
+        await LoadChildForms(studentId);
+        isViewFormsModalVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task LoadChildForms(int studentId)
+    {
+        selectedChild = children.FirstOrDefault(c => c.StudentId == studentId);
+
+        if (selectedChild != null)
+        {
+            selectedChildForms = await DbContext.Forms
+                .Where(f => f.AssignedStudentId == studentId && !string.IsNullOrEmpty(f.FormName))
+                .ToListAsync();
+        }
+    }
+
+
+    private void ShowFillFormModal(int formId, int studentId)
+    {
+        selectedFormId = formId;
+        selectedStudentId = studentId;
+
+        var form = DbContext.Forms.FirstOrDefault(f => f.FormId == formId && f.AssignedStudentId == studentId);
+        if (form != null)
+        {
+            var fileName = Path.GetFileName(form.FilePath);
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", studentId.ToString(), fileName);
+            Console.WriteLine($"Adjusted fullPath using GetCurrentDirectory: {fullPath}");
+
+            if (System.IO.File.Exists(fullPath))
+            {
+                pdfDownloadUrl = $"/uploads/{studentId}/{Uri.EscapeDataString(fileName)}";
+                pdfFileName = fileName;
+                Console.WriteLine($"[ShowFillFormModal] pdfDownloadUrl set to: {pdfDownloadUrl}");
+                Console.WriteLine($"[ShowFillFormModal] pdfFileName set to: {pdfFileName}");
+            }
+            else
+            {
+                Console.WriteLine($"[ShowFillFormModal] File not found at: {fullPath}");
+                pdfDownloadUrl = null;
+                pdfFileName = null;
+            }
+        }
+
+        isFillFormModalVisible = true;
+        StateHasChanged();
+    }
+
+    private void HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        uploadedFile = e.File;
+        isFileSelected = uploadedFile != null;
+    }
+
+    private async Task SubmitForm()
+    {
+        if (uploadedFile != null)
+        {
+            var projectDirectory = Directory.GetCurrentDirectory();
+            var pdfSavePath = Path.Combine(projectDirectory, "wwwroot", pdfDownloadUrl.TrimStart('/'));
+
+            using (var stream = new FileStream(pdfSavePath, FileMode.Create))
+            {
+                await uploadedFile.OpenReadStream().CopyToAsync(stream);
+            }
+
+            var formEntry = await DbContext.Forms.FirstOrDefaultAsync(f => f.FormId == selectedFormId && f.AssignedStudentId == selectedStudentId);
+            if (formEntry != null)
+            {
+                formEntry.Status = "Completed";
+                await DbContext.SaveChangesAsync();
+            }
+
+            HideFillFormModal();
+        }
+    }
+
+    private void HideViewFormsModal()
+    {
+        isViewFormsModalVisible = false;
+        selectedChildForms.Clear();
+        selectedChild = null;
+    }
+
+    private void HideFillFormModal()
+    {
+        isFillFormModalVisible = false;
+        pdfDownloadUrl = string.Empty;
+        uploadedFile = null;
+        isFileSelected = false;
+    }
+
+    private async Task SignOut()
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthProvider.Logout();
+        NavManager.NavigateTo("/", true);
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Assigned" => "status-assigned",
+            "Not Reviewed" => "status-not-reviewed",
+            "Completed" => "status-completed",
+            _ => "status-unknown"
+        };
+    }
 }

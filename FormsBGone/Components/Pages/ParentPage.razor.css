@@ -1,0 +1,382 @@
+﻿﻿ /* General Styles */
+body {
+    padding-right: 40px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9fb;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 40px;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #004080;
+}
+
+h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #092daa;
+}
+
+/* Button Styles */
+.btn-signout {
+    background-color: #5a6268;
+    color: white;
+    padding: 10px 25px;
+    font-size: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    .btn-signout:hover {
+        background-color: #4e555b;
+    }
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 50px 20px 80px;
+}
+
+.student-directory h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #003366;
+}
+
+.search-container {
+    display: flex;
+    justify-content: flex-end; /* Align search bar to the right */
+    margin-right: 30px;
+    margin-bottom: 20px;
+}
+
+/* Search Bar Styles */
+.search-container {
+    display: flex;
+    justify-content: flex-end; /* Align search bar to the right */
+    align-items: center;
+    margin-right: 20px; /* Optional: Add a margin if needed */
+}
+
+
+.search-bar input[type="text"] {
+    width: 300px;
+    padding: 10px 15px;
+    font-size: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .search-bar input[type="text"]:focus {
+        outline: none;
+        border-color: #004080;
+    }
+
+.no-students,
+.no-children {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    padding: 15px;
+    width: 300px;
+    height: 100px;
+    text-align: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 24px;
+    color: #505050;
+}
+
+.student-list-container {
+    margin: 0 auto;
+    padding: 0 40px; /* Adjust padding to fit the content */
+    width: 100%;
+}
+
+.student-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+    width: 100%; /* Ensure list spans the entire container width */
+}
+
+.student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 22px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 60px;
+    width: 100%; /* Ensure each student item spans the container width */
+    transition: background-color 0.3s ease;
+}
+
+    .student-item:hover {
+        background-color: #f0f8ff;
+    }
+
+
+.btn-view-forms {
+    background-color: #004080;
+    color: white;
+    border: none;
+    font-size: 18px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+    .btn-view-forms:hover {
+        background-color: #002a60;
+    }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    display: block;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    padding: 30px; /* Ensure padding around the modal content to prevent overflow */
+    width: 90%;
+    max-width: 1100px;
+    max-height: 50vh;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    padding: 5px; /* Add padding to avoid clipping */
+    border: none; /* Ensure no borders are hiding part of the button */
+    background-color: transparent; /* No background color to ensure visibility */
+    transition: color 0.3s ease;
+}
+
+    .btn-close:hover {
+        color: #000;
+    }
+
+    .btn-close:focus {
+        outline: none; /* Removes the outline for focused state */
+    }
+
+/* Form List Styles */
+.form-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.form-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+    .form-item strong {
+        flex-grow: 1; /* Ensure that form description takes as much space as possible */
+        text-align: left;
+    }
+
+
+    .form-item:hover {
+        background-color: #f0f8ff;
+    }
+
+.status-box {
+    min-width: 100px; /* Ensure that all status boxes have the same minimum width */
+    text-align: center;
+}
+
+/* Status Colors */
+.status-assigned {
+    background-color: #808080;
+}
+
+.status-not-reviewed {
+    background-color: #ff0000;
+}
+
+.status-complete {
+    background-color: #008000;
+}
+
+.status-unknown {
+    background-color: #cccccc;
+    color: black;
+}
+
+.btn-fill-form {
+    background-color: #008000;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    .btn-fill-form:hover {
+        background-color: #006600;
+    }
+
+.no-forms {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #fefefe;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #505050;
+    margin: 20px auto;
+    font-size: 20px;
+    width: 400px;
+    text-align: center;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 70vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+    .modal h3 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #092daa;
+        margin-bottom: 20px;
+    }
+
+
+.download-link {
+    font-weight: bold;
+    color: #004080;
+    text-decoration: none;
+}
+
+.file-input-inline {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Button Group Positioned at Bottom Right */
+.button-group-bottom {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+iframe {
+    border: none;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background-color: #008000;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background-color: #cccccc;
+    color: #333;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #006600;
+}
+
+.btn-secondary:hover {
+    background-color: #bbbbbb;
+}
