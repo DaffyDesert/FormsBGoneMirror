@@ -82,28 +82,26 @@ h3 {
         border-color: #004080;
     }
 
-.no-students,
 .no-children {
-    display: flex;
     justify-content: center;
     align-items: center;
     margin: 20px auto;
     padding: 15px;
     width: 300px;
-    height: 100px;
+    height: 70px;
     text-align: center;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff; /* White background */
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     font-size: 24px;
-    color: #505050;
+    color: #505050; /* Darker gray color */
 }
 
 .student-list-container {
-    margin: 0 auto;
-    padding: 0 40px; /* Adjust padding to fit the content */
-    width: 100%;
+    list-style-type: none;
+    padding: 0;
+    margin: 30px 50px 20px 80px;
 }
 
 .student-list {
@@ -171,6 +169,16 @@ h3 {
     max-height: 50vh;
     overflow-y: auto;
     animation: fadeIn 0.3s ease-out;
+}
+
+.view-forms-modal {
+    max-width: 700px;
+    max-height: 70vh;
+}
+
+.fill-form-modal {
+    max-width: 700px;
+    max-height: 50vh;
 }
 
 .btn-close {
@@ -321,18 +329,26 @@ h3 {
     border-radius: 8px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     padding: 30px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 70vh;
     overflow-y: auto;
     position: relative;
+    font-size: 1.3rem;
+}
+
+.view-forms-modal {
+    max-width: 700px;
+    max-height: 70vh;
+}
+
+.fill-form-modal {
+    max-width: 500px;
+    max-height: 60vh;
 }
 
     .modal h3 {
         font-size: 2rem;
         font-weight: bold;
         color: #092daa;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
 
 
@@ -350,9 +366,9 @@ h3 {
 /* Button Group Positioned at Bottom Right */
 .button-group-bottom {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 30px;
+    justify-content: center;
+    gap: 70px;
+    margin-top: 40px;
 }
 
 iframe {
