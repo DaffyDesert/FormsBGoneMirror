@@ -28,8 +28,8 @@
                 <button class="btn btn-dropdown">Directories</button>
                 <div class="dropdown-content">
                     <a href="/administrator">Forms Directory</a>
-                    <a href="#">Student Directory</a>
-                    <a href="#">Staff Directory</a>
+                    <a href="/administrator/students">Student Directory</a>
+                    <a href="/administrator/staff">Staff Directory</a>
                 </div>
             </div>
             <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
@@ -140,9 +140,6 @@
             </div>
         </div>
     }
-
-
-
 
     @if (isDeleteConfirmationVisible)
     {
