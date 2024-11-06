@@ -177,8 +177,9 @@ h3 {
 }
 
 .fill-form-modal {
-    max-width: 700px;
-    max-height: 50vh;
+    max-width: none;
+    width: 700px;
+    height: 30vh;
 }
 
 .btn-close {
