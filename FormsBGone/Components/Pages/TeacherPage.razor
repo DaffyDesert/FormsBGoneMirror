@@ -204,15 +204,7 @@ else
         searchQuery = e.Value.ToString();
         FilterStudents();
     }
-    // private void FilterStudents()
-    // {
-        // Filter the student list based on the current search query and selected filter
-    //    filteredStudentList = students
-    //        .Where(s => string.IsNullOrEmpty(searchQuery) ||
-    //                    $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-    //                    .Where(s => string.IsNullOrEmpty(selectedFilter) || s.Grade == selectedFilter) // This was for Dropdown filter
-    //                    .ToList();
-    // }
+
     private void FilterStudents()
     {
         int? gradeFilter = int.TryParse(selectedFilter, out var grade) ? grade : (int?)null;
@@ -223,7 +215,6 @@ else
                         (!gradeFilter.HasValue || s.Grade == gradeFilter)) // Use parsed grade filter if available
             .ToList();
     }
-
 
     private void OnFilterChange(ChangeEventArgs e)
     {

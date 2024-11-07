@@ -42,7 +42,45 @@
         <div class="student-directory">
             <h2>Student Directory</h2>
         </div>
+
+        <div class="search-container">
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input id="search-entry" type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+
+            <!-- Filter Dropdown -->
+            <div class="filter-dropdown">
+                <select id="filter-dropdown" @onchange="OnFilterChange">
+                    <option value="">All</option>
+                    @foreach (var grade in availableGrades)
+                    {
+                        <option value="@grade">@($"{grade}th Grade")</option>
+                    }
+                </select>
+            </div>
+        </div>
     </div>
+
+    @if (students.Any())
+    {
+        <ul class="student-list">
+            @foreach (var student in filteredStudentList)
+            {
+                <li class="student-item">
+                    <span>@($"{student.FirstName} {student.LastName}")</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="no-students">
+            <p>No students found.</p>
+        </div>
+    }
+
+
 }
 else
 {
@@ -51,9 +89,15 @@ else
 
 
 @code {
-    public string UploadFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
     public bool Authorized = false;
     public Administrator currentAdmin = new Administrator();
+
+    private string searchQuery = string.Empty;
+    private string selectedFilter = string.Empty;
+
+    public List<Student> students = new();
+    public List<Student> filteredStudentList = new();
+    private List<int> availableGrades = new(); // List to store unique grades
 
     // Load Page
     protected override async Task OnInitializedAsync()
@@ -66,10 +110,15 @@ else
             try
             {
                 currentAdmin = await GetCurrentAdminDetails();
+
+                students = await DbContext.Students.ToListAsync();
+                filteredStudentList = students; // Initial load shows all students
+
+                availableGrades = students.Select(s => s.Grade).Distinct().OrderBy(g => g).ToList();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving admin data: {ex.Message}");
+                Console.WriteLine($"Error retrieving data: {ex.Message}");
             }
         }
     }
@@ -91,6 +140,29 @@ else
         }
 
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        FilterStudents();
+    }
+
+    private void FilterStudents()
+    {
+        int? gradeFilter = int.TryParse(selectedFilter, out var grade) ? grade : (int?)null;
+
+        filteredStudentList = students
+            .Where(s => (string.IsNullOrEmpty(searchQuery) ||
+            $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+                        (!gradeFilter.HasValue || s.Grade == gradeFilter)) // Use parsed grade filter if available
+            .ToList();
+    }
+
+    private void OnFilterChange(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value?.ToString() ?? string.Empty;
+        FilterStudents();
     }
 
     private async Task SignOut()
