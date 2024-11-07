@@ -44,12 +44,16 @@
         </div>
 
         <div class="search-container">
-            <!-- Search Bar -->
+            <div class="add-student-btn">
+                <button class="btn btn-primary" @onclick="ShowAddStudentModal">
+                    <i class="fas fa-plus"></i> Add Student
+                </button>
+            </div>
+
             <div class="search-bar">
                 <input id="search-entry" type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
             </div>
 
-            <!-- Filter Dropdown -->
             <div class="filter-dropdown">
                 <select id="filter-dropdown" @onchange="OnFilterChange">
                     <option value="">All</option>
@@ -69,6 +73,10 @@
             {
                 <li class="student-item">
                     <span>@($"{student.FirstName} {student.LastName}")</span>
+                    <div class="student-item-buttons">
+                        <button class="btn btn-secondary" @onclick="() => EditStudent(student)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteStudentConfirmation(student)">Delete</button>
+                    </div>
                 </li>
             }
         </ul>
@@ -80,7 +88,72 @@
         </div>
     }
 
+    @if (isAddStudentModalVisible || isEditStudentModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h2>@(isAddMode ? "Add New Student" : "Edit Student")</h2>
+                <EditForm EditContext="addEditContext" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
 
+                    <div class="form-group">
+                        <label>Student ID</label>
+                        <InputText @bind-Value="newStudent.StudentId" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <InputText @bind-Value="newStudent.FirstName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <InputText @bind-Value="newStudent.LastName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Middle Initial</label>
+                        <InputText @bind-Value="newStudent.MiddleInitial" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grade</label>
+                        <InputNumber @bind-Value="newStudent.Grade" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Parent Emails (Comma-separated)</label>
+                        <InputText @bind-Value="newStudent.ParentEmailsString" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teacher Emails (Comma-separated)</label>
+                        <InputText @bind-Value="newStudent.TeacherEmailsString" />
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" @onclick="() => isAddStudentModalVisible = isEditStudentModalVisible = false">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (isDeleteConfirmationVisible)
+    {
+        <div class="confirm-overlay" @onclick="HideDeleteStudentConfirmation">
+            <div class="confirm-modal" @onclick:stopPropagation="true">
+                <h2>Confirm Deletion</h2>
+                <p>Are you sure you want to delete this student?</p>
+                <div class="button-group">
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                    <button class="btn btn-secondary" @onclick="HideDeleteStudentConfirmation">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
 }
 else
 {
@@ -97,9 +170,17 @@ else
 
     public List<Student> students = new();
     public List<Student> filteredStudentList = new();
-    private List<int> availableGrades = new(); // List to store unique grades
+    private List<int> availableGrades = new();
 
-    // Load Page
+    public bool isAddStudentModalVisible = false;
+    public bool isEditStudentModalVisible = false;
+    public bool isDeleteConfirmationVisible = false;
+
+    private StudentFormModel newStudent = new();
+    private EditContext addEditContext;
+    private Student selectedStudent;
+    private bool isAddMode = true;
+
     protected override async Task OnInitializedAsync()
     {
         var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
@@ -110,9 +191,8 @@ else
             try
             {
                 currentAdmin = await GetCurrentAdminDetails();
-
-                students = await DbContext.Students.ToListAsync();
-                filteredStudentList = students; // Initial load shows all students
+                students = await DbContext.Students.Include(s => s.ParentEmails).Include(s => s.TeacherEmails).ToListAsync();
+                filteredStudentList = students;
 
                 availableGrades = students.Select(s => s.Grade).Distinct().OrderBy(g => g).ToList();
             }
@@ -127,19 +207,95 @@ else
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
         if (user.Identity.IsAuthenticated)
         {
             var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
             if (!string.IsNullOrEmpty(email))
             {
-                return await DbContext.Administrators
-                    .FirstOrDefaultAsync(a => a.Email == email);
+                return await DbContext.Administrators.FirstOrDefaultAsync(a => a.Email == email);
             }
         }
-
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private void ShowAddStudentModal()
+    {
+        isAddMode = true;
+        newStudent = new StudentFormModel();
+        addEditContext = new EditContext(newStudent);
+        isAddStudentModalVisible = true;
+    }
+
+    private void EditStudent(Student student)
+    {
+        isAddMode = false;
+        selectedStudent = student;
+        newStudent = new StudentFormModel
+            {
+                StudentId = student.StudentId.ToString(),
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                MiddleInitial = student.MiddleInitial,
+                ParentEmailsString = string.Join(", ", student.ParentEmails.Select(p => p.Email)),
+                TeacherEmailsString = string.Join(", ", student.TeacherEmails.Select(t => t.Email)),
+                Grade = student.Grade
+            };
+        addEditContext = new EditContext(newStudent);
+        isEditStudentModalVisible = true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isAddMode)
+        {
+            var newEntity = new Student
+                {
+                    StudentId = int.TryParse(newStudent.StudentId.ToString(), out var studentId) ? studentId : 0,
+                    FirstName = newStudent.FirstName,
+                    LastName = newStudent.LastName,
+                    MiddleInitial = newStudent.MiddleInitial,
+                    Grade = newStudent.Grade,
+                    ParentEmails = newStudent.ParentEmailsString.Split(',').Select(email => new Parent { Email = email.Trim() }).ToList(),
+                    TeacherEmails = newStudent.TeacherEmailsString.Split(',').Select(email => new Teacher { Email = email.Trim() }).ToList()
+                };
+            DbContext.Students.Add(newEntity);
+        }
+        else
+        {
+            selectedStudent.FirstName = newStudent.FirstName;
+            selectedStudent.LastName = newStudent.LastName;
+            selectedStudent.MiddleInitial = newStudent.MiddleInitial;
+            selectedStudent.Grade = newStudent.Grade;
+            selectedStudent.ParentEmails = newStudent.ParentEmailsString.Split(',').Select(email => new Parent { Email = email.Trim() }).ToList();
+            selectedStudent.TeacherEmails = newStudent.TeacherEmailsString.Split(',').Select(email => new Teacher { Email = email.Trim() }).ToList();
+            DbContext.Students.Update(selectedStudent);
+        }
+
+        await DbContext.SaveChangesAsync();
+        students = await DbContext.Students.ToListAsync();
+        filteredStudentList = students;
+        isAddStudentModalVisible = false;
+        isEditStudentModalVisible = false;
+    }
+
+    private void ShowDeleteStudentConfirmation(Student student)
+    {
+        selectedStudent = student;
+        isDeleteConfirmationVisible = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        DbContext.Students.Remove(selectedStudent);
+        await DbContext.SaveChangesAsync();
+        students = await DbContext.Students.ToListAsync();
+        filteredStudentList = students;
+        isDeleteConfirmationVisible = false;
+    }
+
+    private void HideDeleteStudentConfirmation()
+    {
+        isDeleteConfirmationVisible = false;
     }
 
     private void OnSearchInput(ChangeEventArgs e)
@@ -173,6 +329,27 @@ else
 
         NavManager.NavigateTo("/", true);
     }
+
+    public class StudentFormModel
+    {
+        [Required]
+        public string StudentId { get; set; }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
+
+        public string MiddleInitial { get; set; }
+
+        [Required]
+        public string ParentEmailsString { get; set; } = string.Empty;
+
+        [Required]
+        public string TeacherEmailsString { get; set; } = string.Empty;
+
+        [Required]
+        public int Grade { get; set; }
+    }
 }
-
-

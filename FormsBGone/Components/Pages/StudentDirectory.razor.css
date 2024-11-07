@@ -99,6 +99,13 @@ h1 {
     align-items: center;
 }
 
+.add-student-btn .btn-primary {
+    background-color: #17a2b8; /* Light blue/teal */
+    font-size: 18px;
+    padding: 12px 20px;
+    margin-right: 20px;
+}
+
 /* Search Bar Styles */
 .search-bar {
     display: flex;
@@ -184,6 +191,12 @@ h1 {
         background-color: #f0f8ff; /* Light blue on hover */
     }
 
+.student-item-buttons button {
+    margin-left: 10px;
+    font-size: 16px;
+    padding: 10px 15px;
+}
+
 .btn-primary {
     background-color: #17a2b8; /* Light blue/teal */
     font-size: 18px;
@@ -224,6 +237,27 @@ h1 {
         margin-bottom: 20px;
         text-align: center;
     }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 8px; 
+        color: #333; 
+    }
+
+.custom-form-control {
+    width: 100%;
+    padding: 12px 20px;
+    box-sizing: border-box;
+}
 
 /* Modal Styles */
 .confirm-overlay {
