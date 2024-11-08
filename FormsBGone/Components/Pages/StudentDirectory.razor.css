@@ -258,6 +258,55 @@ h1 {
     padding: 12px 20px;
     box-sizing: border-box;
 }
+/* Styling for the email list container */
+.parent-email-list, .teacher-email-list {
+    margin-top: 10px;
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+    /* Style individual email list items */
+    .parent-email-list div, .teacher-email-list div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    /* Style the checkbox */
+    .parent-email-list input[type="checkbox"],
+    .teacher-email-list input[type="checkbox"] {
+        margin-right: 10px;
+        vertical-align: middle;
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Style the label for email */
+        .parent-email-list label, .teacher-email-list label {
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+        padding-left: 10px;
+        padding-top: 6px;
+        vertical-align: middle;
+    }
+
+    /* Add hover effect on email list items */
+    .parent-email-list div:hover,
+    .teacher-email-list div:hover {
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+/* Optional: Add some padding and borders for better visibility */
+.parent-email-list, .teacher-email-list {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
 
 /* Modal Styles */
 .confirm-overlay {
