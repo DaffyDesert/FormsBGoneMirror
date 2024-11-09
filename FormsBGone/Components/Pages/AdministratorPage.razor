@@ -492,10 +492,6 @@ else
         return $"/uploads/base/{fileName}";
     }
 
-
-
-
-    //big changes here
     private async Task CreateFormsForAllStudents(string filePath, IBrowserFile file)
     {
         int maxFormId = 0;
@@ -543,8 +539,6 @@ else
 
         await DbContext.SaveChangesAsync();
     }
-
-
 
     // Edit File Functionality
     private void EditFile(FileItem file)

@@ -50,7 +50,9 @@
         }
         else
         {
-            <p>No children found.</p>
+            <div class="no-children">
+                <p>No children found.</p>
+            </div>
         }
     </div>
 
@@ -87,7 +89,9 @@
                 }
                 else
                 {
-                    <p>No forms found for @selectedChild.FirstName @selectedChild.LastName.</p>
+                    <div class="no-forms">
+                        <p>No forms found for @selectedChild.FirstName @selectedChild.LastName.</p>
+                    </div>
                 }
 
                 <button class="btn btn-close" @onclick="HideViewFormsModal"></button>

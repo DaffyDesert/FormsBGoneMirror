@@ -93,13 +93,17 @@
         <div class="modal-overlay">
             <div class="modal">
                 <h2>@(isAddMode ? "Add New Student" : "Edit Student")</h2>
-                <EditForm EditContext="addEditContext" OnValidSubmit="HandleValidSubmit">
+                <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
 
                     <div class="form-group">
                         <label>Student ID</label>
-                        <InputText @bind-Value="newStudent.StudentId" />
+                        <InputText @bind-Value="newStudent.StudentId" disabled="@isEditing" />
+                        @if (!string.IsNullOrEmpty(StudentIdErrorMessage))
+                        {
+                            <div class="validation-message">@StudentIdErrorMessage</div>
+                        }
                     </div>
 
                     <div class="form-group">
@@ -120,11 +124,16 @@
                     <div class="form-group">
                         <label>Grade</label>
                         <InputSelect @bind-Value="newStudent.Grade">
+                            <option value=-1>Select Grade</option>
                             @for (int i = 5; i <= 12; i++)
                             {
                                 <option value="@i">@($"{i}th Grade")</option>
                             }
                         </InputSelect>
+                        @if (!string.IsNullOrEmpty(GradeErrorMessage))
+                        {
+                            <div class="validation-message">@GradeErrorMessage</div>
+                        }
                     </div>
 
                     <div class="form-group">
@@ -135,8 +144,11 @@
                                 <div>
                                     <InputCheckbox @bind-Value="selectedParentEmailMap[parentEmail]" />
                                     <label>@parentEmail</label>
-                                    <span>@(selectedParentEmailMap[parentEmail] ? "Selected" : "Not Selected")</span>
                                 </div>
+                            }
+                            @if (!string.IsNullOrEmpty(ParentEmailErrorMessage))
+                            {
+                                <div class="validation-message">@ParentEmailErrorMessage</div>
                             }
                         </div>
                     </div>
@@ -149,15 +161,17 @@
                                 <div>
                                     <InputCheckbox @bind-Value="selectedTeacherEmailMap[teacherEmail]" />
                                     <label>@teacherEmail</label>
-                                    <span>@(selectedTeacherEmailMap[teacherEmail] ? "Selected" : "Not Selected")</span>
                                 </div>
+                            }
+                            @if (!string.IsNullOrEmpty(TeacherEmailErrorMessage))
+                            {
+                                <div class="validation-message">@TeacherEmailErrorMessage</div>
                             }
                         </div>
                     </div>
 
-
                     <div class="button-group">
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary" @onclick="SaveSelectedEmails">Save </button>
                         <button type="button" class="btn btn-secondary" @onclick="() => isAddStudentModalVisible = isEditStudentModalVisible = false">Cancel</button>
                     </div>
                 </EditForm>
@@ -204,9 +218,15 @@ else
     public bool isDeleteConfirmationVisible = false;
 
     private StudentFormModel newStudent = new();
-    private EditContext addEditContext;
+    private EditContext editContext;
     private Student selectedStudent;
     private bool isAddMode = true;
+    public bool isEditing = false;
+
+    public string StudentIdErrorMessage { get; set; }
+    public string GradeErrorMessage { get; set; }
+    public string ParentEmailErrorMessage { get; set; }
+    public string TeacherEmailErrorMessage { get; set; }
 
     public Dictionary<string, bool> selectedParentEmailMap = new Dictionary<string, bool>();
     public Dictionary<string, bool> selectedTeacherEmailMap = new Dictionary<string, bool>();
@@ -258,29 +278,16 @@ else
     {
         isAddMode = true;
         newStudent = new StudentFormModel();
-        addEditContext = new EditContext(newStudent);
+        editContext = new EditContext(newStudent);
         isAddStudentModalVisible = true;
         selectedParentEmailMap = allParentEmails.ToDictionary(email => email, email => false);
         selectedTeacherEmailMap = allTeacherEmails.ToDictionary(email => email, email => false);
     }
 
-    protected override void OnParametersSet()
-    {
-        foreach (var parentEmail in selectedParentEmailMap.Keys)
-        {
-            HandleParentEmailChange(parentEmail, selectedParentEmailMap[parentEmail]);
-        }
-
-        foreach (var teacherEmail in selectedTeacherEmailMap.Keys)
-        {
-            HandleTeacherEmailChange(teacherEmail, selectedTeacherEmailMap[teacherEmail]);
-        }
-    }
-
-
     private void EditStudent(Student student)
     {
         isAddMode = false;
+        isEditing = true;
         selectedStudent = student;
         newStudent = new StudentFormModel
             {
@@ -292,7 +299,7 @@ else
                 SelectedParentEmails = student.ParentEmails.Select(p => p.Email).ToList(),
                 SelectedTeacherEmails = student.TeacherEmails.Select(t => t.Email).ToList()
             };
-        addEditContext = new EditContext(newStudent);
+        editContext = new EditContext(newStudent);
         isEditStudentModalVisible = true;
 
         selectedParentEmailMap.Clear();
@@ -313,62 +320,212 @@ else
     {
         if (isAddMode)
         {
+            StudentIdErrorMessage = GradeErrorMessage = ParentEmailErrorMessage = TeacherEmailErrorMessage = null;
+
+            // Check if the Student ID already exists
             var existingStudent = await DbContext.Students
                 .FirstOrDefaultAsync(s => s.StudentId == int.Parse(newStudent.StudentId));
             if (existingStudent != null)
             {
-                //not displayed to user
-                Console.WriteLine("Student ID already in use.");
+                StudentIdErrorMessage = "Student ID already in use.";
+                editContext.NotifyValidationStateChanged();
                 return;
             }
 
+            // Validate the grade and emails
             if (newStudent.Grade == -1)
             {
-                //not displayed to user
-                Console.WriteLine("Grade is required.");
+                GradeErrorMessage = "Grade is required.";
+                editContext.NotifyValidationStateChanged();
                 return;
             }
 
+            if (newStudent.SelectedParentEmails.Count == 0)
+            {
+                ParentEmailErrorMessage = "Please select at least one parent email.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            if (newStudent.SelectedTeacherEmails.Count == 0)
+            {
+                TeacherEmailErrorMessage = "Please select at least one teacher email.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Create a new Student entity
             var newEntity = new Student
                 {
                     StudentId = int.TryParse(newStudent.StudentId.ToString(), out var studentId) ? studentId : 0,
                     FirstName = newStudent.FirstName,
                     LastName = newStudent.LastName,
                     MiddleInitial = newStudent.MiddleInitial,
-                    Grade = newStudent.Grade,
-                    ParentEmails = newStudent.SelectedParentEmails.Select(email => new Parent { Email = email.Trim() }).ToList(),
-                    TeacherEmails = newStudent.SelectedTeacherEmails.Select(email => new Teacher { Email = email.Trim() }).ToList()
+                    Grade = newStudent.Grade
                 };
 
+            // Fetch the Parents and Teachers based on emails
+            var parents = await DbContext.Parents
+                .Where(p => newStudent.SelectedParentEmails.Contains(p.Email))
+                .ToListAsync();
+
+            var teachers = await DbContext.Teachers
+                .Where(t => newStudent.SelectedTeacherEmails.Contains(t.Email))
+                .ToListAsync();
+
+            // Link parents and teachers to the new student
+            newEntity.ParentEmails = parents;
+            newEntity.TeacherEmails = teachers;
+
+            // Create the folder for the student
+            var studentDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", newEntity.StudentId.ToString());
+            Directory.CreateDirectory(studentDirectoryPath);
+
+            // Output for debugging (optional)
             Console.WriteLine("New student entity would be added:");
             Console.WriteLine($"ID: {newEntity.StudentId}, Name: {newEntity.FirstName} {newEntity.MiddleInitial} {newEntity.LastName}, Grade: {newEntity.Grade}");
             Console.WriteLine("Parent Emails: " + string.Join(", ", newEntity.ParentEmails.Select(p => p.Email)));
             Console.WriteLine("Teacher Emails: " + string.Join(", ", newEntity.TeacherEmails.Select(t => t.Email)));
 
-            //DbContext.Students.Add(newEntity);
+            // Add the new Student to the DbContext
+            DbContext.Students.Add(newEntity);
+
+            await CreateFormsForAllStudents(studentDirectoryPath, newEntity);
         }
         else
         {
-            selectedStudent.FirstName = newStudent.FirstName;
-            selectedStudent.LastName = newStudent.LastName;
-            selectedStudent.MiddleInitial = newStudent.MiddleInitial;
-            selectedStudent.Grade = newStudent.Grade;
-            selectedStudent.ParentEmails = newStudent.SelectedParentEmails.Select(email => new Parent { Email = email.Trim() }).ToList();
-            selectedStudent.TeacherEmails = newStudent.SelectedTeacherEmails.Select(email => new Teacher { Email = email.Trim() }).ToList();
+            // Fetch the selected Student entity from the database
+            var existingStudent = await DbContext.Students
+                .Include(s => s.ParentEmails)
+                .Include(s => s.TeacherEmails)
+                .FirstOrDefaultAsync(s => s.StudentId == selectedStudent.StudentId);
 
+            if (existingStudent == null)
+            {
+                StudentIdErrorMessage = "Student not found.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Update the Student's details
+            existingStudent.FirstName = newStudent.FirstName;
+            existingStudent.LastName = newStudent.LastName;
+            existingStudent.MiddleInitial = newStudent.MiddleInitial;
+            existingStudent.Grade = newStudent.Grade;
+
+            // Fetch the new Parents and Teachers based on emails
+            var newParents = await DbContext.Parents
+                .Where(p => newStudent.SelectedParentEmails.Contains(p.Email))
+                .ToListAsync();
+
+            var newTeachers = await DbContext.Teachers
+                .Where(t => newStudent.SelectedTeacherEmails.Contains(t.Email))
+                .ToListAsync();
+
+            // Update the relationships
+            existingStudent.ParentEmails = newParents;
+            existingStudent.TeacherEmails = newTeachers;
+
+            // Output for debugging (optional)
             Console.WriteLine("Existing student entity would be updated:");
-            Console.WriteLine($"ID: {selectedStudent.StudentId}, Name: {selectedStudent.FirstName} {selectedStudent.MiddleInitial} {selectedStudent.LastName}, Grade: {selectedStudent.Grade}");
-            Console.WriteLine("Updated Parent Emails: " + string.Join(", ", selectedStudent.ParentEmails.Select(p => p.Email)));
-            Console.WriteLine("Updated Teacher Emails: " + string.Join(", ", selectedStudent.TeacherEmails.Select(t => t.Email)));
+            Console.WriteLine($"ID: {existingStudent.StudentId}, Name: {existingStudent.FirstName} {existingStudent.MiddleInitial} {existingStudent.LastName}, Grade: {existingStudent.Grade}");
+            Console.WriteLine("Updated Parent Emails: " + string.Join(", ", existingStudent.ParentEmails.Select(p => p.Email)));
+            Console.WriteLine("Updated Teacher Emails: " + string.Join(", ", existingStudent.TeacherEmails.Select(t => t.Email)));
 
-            //DbContext.Students.Update(selectedStudent);
+            // Update the existing student in the DbContext
+            DbContext.Students.Update(existingStudent);
         }
 
-        //await DbContext.SaveChangesAsync();
-        //students = await DbContext.Students.ToListAsync();
+        await DbContext.SaveChangesAsync();
+
+        students = await DbContext.Students.ToListAsync();
         filteredStudentList = students;
+
         isAddStudentModalVisible = false;
         isEditStudentModalVisible = false;
+    }
+
+    private async Task CreateFormsForAllStudents(string studentDirectoryPath, Student selectedStudent)
+    {
+        var adminFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
+
+        var formFiles = Directory.GetFiles(adminFolderPath);
+
+        if (formFiles.Length == 0)
+        {
+            Console.WriteLine("No forms found in the admin folder.");
+            return;
+        }
+
+        int maxFormId = 0;
+
+        // Only get the max value if forms exist in the database
+        if (await DbContext.Forms.AnyAsync())
+        {
+            maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
+        }
+
+        foreach (var formFilePath in formFiles)
+        {
+            // Get the form name from the file name (assumes form names match)
+            var formNameFromFile = Path.GetFileNameWithoutExtension(formFilePath);
+
+            // Retrieve metadata from an existing student's form with the same form name
+            var existingFormMetadata = await DbContext.Forms
+                                                       .Where(f => f.FormName == formNameFromFile && f.AssignedStudentId != null)
+                                                       .FirstOrDefaultAsync();
+
+            if (existingFormMetadata == null)
+            {
+                Console.WriteLine($"No existing form metadata found for {formNameFromFile}. Skipping this form.");
+                continue; // Skip this form if no metadata is found
+            }
+
+            // Extract metadata from the existing form
+            var shortDescription = existingFormMetadata.ShortDescription;
+            var expirationDate = existingFormMetadata.ExpirationDate;
+
+            // Create a new form for the selected student using the metadata
+            var studentForm = new Form
+                {
+                    FormId = ++maxFormId,
+                    ShortDescription = shortDescription,  // Copy description from an existing student's form
+                    ExpirationDate = expirationDate,      // Copy expiration date from an existing student's form
+                    Status = "Assigned",
+                    AssignedStudentId = selectedStudent.StudentId,
+                    FormName = formNameFromFile  // Use the form name from the file
+                };
+
+            DbContext.Forms.Add(studentForm);
+
+            // Copy the form file from the base folder to the student's folder
+            var studentFilePath = Path.Combine(studentDirectoryPath, formNameFromFile);
+
+            const long maxAllowedSize = 10000000;
+
+            try
+            {
+                using (var fileStream = new FileStream(formFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    using (var studentFileStream = new FileStream(studentFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        await fileStream.CopyToAsync(studentFileStream);
+                    }
+                }
+
+                // Update the form's file path for the student (relative URL)
+                studentForm.FilePath = $"/uploads/{selectedStudent.StudentId}/{formNameFromFile}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error copying file {formNameFromFile}: {ex.Message}");
+            }
+        }
+
+        // Save changes for all the forms at once
+        await DbContext.SaveChangesAsync();
+
+        Console.WriteLine($"All base forms have been assigned to student {selectedStudent.StudentId}.");
     }
 
     private void ShowDeleteStudentConfirmation(Student student)
@@ -379,8 +536,29 @@ else
 
     private async Task ConfirmDelete()
     {
+        var studentWithForms = await DbContext.Students
+        .Include(s => s.Forms)
+        .FirstOrDefaultAsync(s => s.StudentId == selectedStudent.StudentId);
+
+        if (studentWithForms != null)
+        {
+            DbContext.Forms.RemoveRange(studentWithForms.Forms);
+        }
+
+        selectedStudent.ParentEmails.Clear();
+        selectedStudent.TeacherEmails.Clear();
+
         DbContext.Students.Remove(selectedStudent);
+
+        var studentFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", selectedStudent.StudentId.ToString());
+
+        if (Directory.Exists(studentFolderPath))
+        {
+            Directory.Delete(studentFolderPath, true);
+        }
+
         await DbContext.SaveChangesAsync();
+
         students = await DbContext.Students.ToListAsync();
         filteredStudentList = students;
         isDeleteConfirmationVisible = false;
@@ -391,9 +569,21 @@ else
         isDeleteConfirmationVisible = false;
     }
 
+    private async Task SaveSelectedEmails()
+    {
+        foreach (var kvp in selectedParentEmailMap)
+        {
+            await HandleParentEmailChange(kvp.Key, kvp.Value);
+        }
+
+        foreach (var kvp in selectedTeacherEmailMap)
+        {
+            await HandleTeacherEmailChange(kvp.Key, kvp.Value);
+        }
+    }
+
     private async Task HandleParentEmailChange(string parentEmail, bool isSelected)
     {
-        Console.WriteLine("Parent Email Changed!!!!!!!!!!!!");
         selectedParentEmailMap[parentEmail] = isSelected;
 
         if (isSelected)
@@ -405,8 +595,6 @@ else
         {
             newStudent.SelectedParentEmails.Remove(parentEmail);
         }
-
-        Console.WriteLine($"Selected Parent Emails: {newStudent.SelectedParentEmails.Count}");
     }
 
     private async Task HandleTeacherEmailChange(string teacherEmail, bool isSelected)
@@ -422,8 +610,6 @@ else
         {
             newStudent.SelectedTeacherEmails.Remove(teacherEmail);
         }
-
-        Console.WriteLine($"Selected Teacher Emails: {newStudent.SelectedTeacherEmails.Count}");
     }
 
     private void OnSearchInput(ChangeEventArgs e)
@@ -461,7 +647,7 @@ else
     public class StudentFormModel
     {
         [Required]
-        [RegularExpression(@"\d{4}", ErrorMessage = "Student ID must be exactly 4 digits.")]
+        [RegularExpression(@"[1-9]\d{3}", ErrorMessage = "Student ID must be exactly 4 digits & cannot start with zero.")]
         public string StudentId { get; set; }
 
         [Required]
@@ -477,6 +663,6 @@ else
         public List<string> SelectedTeacherEmails { get; set; } = new List<string>();
 
         [Required]
-        public int Grade { get; set; }
+        public int Grade { get; set; } = -1;
     }
 }
