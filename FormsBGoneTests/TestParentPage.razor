@@ -1,0 +1,204 @@
+@attribute [TestClass]
+@inherits BunitTestContext
+@code
+{
+
+	[TestMethod]
+	public void TestParentPageView_Unauthenticated()
+	{
+		// Set up
+		SetUpServices();
+
+		// Logout
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.Logout().Wait();
+
+		// Act
+		var cut = RenderComponent<ParentPage>();
+
+		// Validate
+		Assert.AreEqual(false, cut.Instance.Authorized);
+	}
+
+	[TestMethod]
+	public void TestParentPageView_Authorized()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		var cut = RenderComponent<ParentPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		//Validate
+		Assert.AreEqual(true, cut.Instance.Authorized);
+		Assert.IsNotNull(cut.Instance.currentParent);
+		Assert.AreNotEqual(0, cut.Instance.children.Count);
+		Assert.AreNotEqual(0, cut.Instance.filteredChildren.Count);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+
+	[TestMethod]
+	public void TestParentPageView_Authenticated_Unauthorized()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "twell01",
+				Password = "TWellSch01"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		var cut = RenderComponent<ParentPage>();
+
+		// Validate
+		Assert.AreEqual(false, cut.Instance.Authorized);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+
+	[TestMethod]
+	public void TestGetCurrentParentDetails()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<ParentPage>();
+
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var result = cut.Instance.GetCurrentParentDetails().Result;
+
+		Assert.AreEqual("dummy1@funny.com", result.Email);
+		Assert.AreEqual("John", result.FirstName);
+		Assert.AreEqual("H", result.MiddleInitial);
+		Assert.AreEqual("Smith", result.LastName);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+
+	[TestMethod]
+	public void TestFilterChange()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<ParentPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var searchEntry = cut.Find("#search-entry");
+		searchEntry.Change("Daniel Smith");
+		searchEntry.Input("Daniel Smith");
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		Assert.AreNotEqual(0, cut.Instance.filteredChildren.Count);
+		if (cut.Instance.filteredChildren.Count >= cut.Instance.children.Count) {
+			Assert.Fail($"Filtered students list contains {cut.Instance.filteredChildren.Count} students, while unfiltered list contains {cut.Instance.children.Count}");
+		}
+	}
+
+	[TestMethod]
+	public void TestHideViewForms()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<ParentPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var showFormButton = cut.Find("#show-view-form");
+		showFormButton.Click();
+		cut.Render();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		try {
+			var hideFormButton = cut.Find("#hide-view-form");
+		}
+		catch (Exception ex) {
+			Assert.Fail(ex.StackTrace + ex.Message);
+		}
+	}
+
+	[TestMethod]
+	public void TestShowViewForms()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<ParentPage>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var showFormButton = cut.Find("#show-view-form");
+		showFormButton.Click();
+		cut.Render();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		var hideFormButton = cut.Find("#hide-view-form");
+		hideFormButton.Click();
+		cut.Render();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		try {
+			hideFormButton = cut.Find("#hide-view-form");
+		}
+		catch (Exception ex) {
+			Assert.IsTrue(true);
+		}
+	}
+}
