@@ -133,9 +133,7 @@
                             @foreach (var parentEmail in allParentEmails)
                             {
                                 <div>
-                                    <InputCheckbox 
-                                        @bind-Value="selectedParentEmailMap[parentEmail]" 
-                                        @onchange="() => HandleParentEmailChange(parentEmail, selectedParentEmailMap[parentEmail])" />
+                                    <InputCheckbox @bind-Value="selectedParentEmailMap[parentEmail]" />
                                     <label>@parentEmail</label>
                                     <span>@(selectedParentEmailMap[parentEmail] ? "Selected" : "Not Selected")</span>
                                 </div>
@@ -149,15 +147,14 @@
                             @foreach (var teacherEmail in allTeacherEmails)
                             {
                                 <div>
-                                    <InputCheckbox 
-                                        @bind-Value="selectedTeacherEmailMap[teacherEmail]" 
-                                        @onchange="() => HandleTeacherEmailChange(teacherEmail, selectedTeacherEmailMap[teacherEmail])" />
+                                    <InputCheckbox @bind-Value="selectedTeacherEmailMap[teacherEmail]" />
                                     <label>@teacherEmail</label>
                                     <span>@(selectedTeacherEmailMap[teacherEmail] ? "Selected" : "Not Selected")</span>
                                 </div>
                             }
                         </div>
                     </div>
+
 
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">Save</button>
@@ -266,6 +263,20 @@ else
         selectedParentEmailMap = allParentEmails.ToDictionary(email => email, email => false);
         selectedTeacherEmailMap = allTeacherEmails.ToDictionary(email => email, email => false);
     }
+
+    protected override void OnParametersSet()
+    {
+        foreach (var parentEmail in selectedParentEmailMap.Keys)
+        {
+            HandleParentEmailChange(parentEmail, selectedParentEmailMap[parentEmail]);
+        }
+
+        foreach (var teacherEmail in selectedTeacherEmailMap.Keys)
+        {
+            HandleTeacherEmailChange(teacherEmail, selectedTeacherEmailMap[teacherEmail]);
+        }
+    }
+
 
     private void EditStudent(Student student)
     {
