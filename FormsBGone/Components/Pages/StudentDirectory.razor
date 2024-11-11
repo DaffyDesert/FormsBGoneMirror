@@ -467,8 +467,9 @@ else
 
         foreach (var formFilePath in formFiles)
         {
-            // Get the form name from the file name (assumes form names match)
+            // Get the form name and extension from the file name
             var formNameFromFile = Path.GetFileNameWithoutExtension(formFilePath);
+            var fileExtension = Path.GetExtension(formFilePath);
 
             // Retrieve metadata from an existing student's form with the same form name
             var existingFormMetadata = await DbContext.Forms
@@ -489,19 +490,20 @@ else
             var studentForm = new Form
                 {
                     FormId = ++maxFormId,
-                    ShortDescription = shortDescription,  // Copy description from an existing student's form
-                    ExpirationDate = expirationDate,      // Copy expiration date from an existing student's form
+                    ShortDescription = shortDescription,
+                    ExpirationDate = expirationDate,
                     Status = "Assigned",
                     AssignedStudentId = selectedStudent.StudentId,
-                    FormName = formNameFromFile  // Use the form name from the file
+                    FormName = formNameFromFile
                 };
 
             DbContext.Forms.Add(studentForm);
 
-            // Copy the form file from the base folder to the student's folder
-            var studentFilePath = Path.Combine(studentDirectoryPath, formNameFromFile);
+            // Ensure the student's directory exists
+            Directory.CreateDirectory(studentDirectoryPath);
 
-            const long maxAllowedSize = 10000000;
+            // Create the full path for the student's copy, including the extension
+            var studentFilePath = Path.Combine(studentDirectoryPath, $"{formNameFromFile}{fileExtension}");
 
             try
             {
@@ -514,7 +516,7 @@ else
                 }
 
                 // Update the form's file path for the student (relative URL)
-                studentForm.FilePath = $"/uploads/{selectedStudent.StudentId}/{formNameFromFile}";
+                studentForm.FilePath = $"/uploads/{selectedStudent.StudentId}/{formNameFromFile}{fileExtension}";
             }
             catch (Exception ex)
             {
