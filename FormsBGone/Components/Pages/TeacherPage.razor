@@ -40,14 +40,13 @@
             <div class="filter-dropdown">
                 <select id="filter-dropdown" @onchange="OnFilterChange">
                     <option value="">All</option>
-                    <option value="12">12th Grade</option>
-                    <option value="11">11th Grade</option>
-                    <option value="10">10th Grade</option>
-                    <option value="9">9th Grade</option>
-                    <option value="8">8th Grade</option>
-                    <option value="7">7th Grade</option>
-                    <option value="6">6th Grade</option>
-                    <option value="5">5th Grade</option>
+                    
+                    @foreach (var grade in availableGrades)
+                    {
+                        <option value= "@grade">@($"{grade}th Grade")</option>
+                    }
+
+                   
                 </select>
             </div>            
         </div>
@@ -114,6 +113,7 @@ else
     private string selectedFilter = string.Empty;
     public Teacher currentTeacher;
 
+    private List<int> availableGrades = new() { 12, 11, 10, 9, 8, 7, 6, 5 };
     public List<Student> students = new();
     public List<Student> filteredStudentList = new();
     private List<Form> selectedStudentForms = new();
@@ -133,6 +133,8 @@ else
                 {
                     students = currentTeacher.Students.ToList(); // Fetch students assigned to this teacher
                     filteredStudentList = students; // Initial load shows all students
+
+                    availableGrades = students.Select(s => s.Grade).Distinct().OrderBy(g => g).ToList();
                 }
             }
             catch (Exception ex)
@@ -211,7 +213,7 @@ else
         filteredStudentList = students
             .Where(s => (string.IsNullOrEmpty(searchQuery) || 
             $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
-                        (!gradeFilter.HasValue || s.Grade == gradeFilter)) // Use parsed grade filter if available
+                        (!gradeFilter.HasValue || s.Grade == gradeFilter)) 
             .ToList();
     }
 
