@@ -117,7 +117,6 @@ else
     public List<Student> students = new();
     public List<Student> filteredStudentList = new();
     private List<Form> selectedStudentForms = new();
-    private List<Student> filteredStudents;
     private Student selectedStudent;
 
     protected override async Task OnInitializedAsync()
@@ -206,7 +205,7 @@ else
         searchQuery = e.Value.ToString();
         FilterStudents();
     }
-    
+
     private void FilterStudents()
     {
         int? gradeFilter = int.TryParse(selectedFilter, out var grade) ? grade : (int?)null;
@@ -217,7 +216,6 @@ else
                         (!gradeFilter.HasValue || s.Grade == gradeFilter)) 
             .ToList();
     }
-
 
     private void OnFilterChange(ChangeEventArgs e)
     {

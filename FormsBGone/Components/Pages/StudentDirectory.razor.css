@@ -1,0 +1,405 @@
+﻿/* General Styles */
+body {
+    padding-right: 40px;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f9; /* Light gray */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 40px;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #003366; /* Dark blue */
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-dropdown, .btn-signout {
+    height: 50px;
+    color: white;
+    padding: 0 25px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border-radius: 4px;
+}
+
+.btn-dropdown {
+    background-color: #007bff; /* Blue */
+}
+
+.btn-signout {
+    background-color: #6c757d; /* Dark gray */
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff; /* White background*/
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+    .dropdown-content a {
+        color: #003366; /* Dark blue text */
+        padding: 15px 20px;
+        text-decoration: none;
+        display: block;
+        font-size: 16px;
+    }
+
+        .dropdown-content a:hover {
+            background-color: #e6f7ff; /* Light blue background on hover */
+        }
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .btn-dropdown {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Header Container Styles */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 50px 20px 80px;
+}
+
+.student-directory h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #003366; /* Dark blue */
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+.add-student-btn .btn-primary {
+    background-color: #17a2b8; /* Light blue/teal */
+    font-size: 18px;
+    padding: 12px 20px;
+    margin-right: 20px;
+}
+
+/* Search Bar Styles */
+.search-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0;
+    margin-right: 10px;
+}
+
+    .search-bar input[type="text"] {
+        width: 300px;
+        padding: 10px 15px;
+        font-size: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        .search-bar input[type="text"]:focus {
+            outline: none;
+            border-color: #004080;
+        }
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    display: inline-block;
+    position: relative;
+    margin-left: 0;
+}
+
+    .filter-dropdown select {
+        padding: 10px;
+        font-size: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+        .filter-dropdown select:focus {
+            outline: none;
+            border-color: #004080;
+        }
+
+.no-students {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    padding: 15px;
+    width: 300px;
+    height: 100px;
+    text-align: center;
+    background-color: #fff; /* White background */
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    font-size: 24px;
+    color: #505050; /* Darker gray color */
+}
+
+.student-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 30px 50px 20px 80px;
+}
+
+.student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 22px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 60px;
+    transition: background-color 0.3s ease;
+}
+
+    .student-item:hover {
+        background-color: #f0f8ff; /* Light blue on hover */
+    }
+
+.student-item-buttons button {
+    margin-left: 10px;
+    font-size: 16px;
+    padding: 10px 15px;
+}
+
+.btn-primary {
+    background-color: #17a2b8; /* Light blue/teal */
+    font-size: 18px;
+    padding: 12px 20px;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    display: block;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 70vh;
+    overflow-y: auto; /* Ensure content is scrollable if needed */
+    animation: fadeIn 0.3s ease-out; /* Fade-in animation */
+}
+
+    .modal h2 {
+        font-size: 2.5rem;
+        color: #003366; /* Dark blue */
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 8px; 
+        color: #333; 
+    }
+
+.custom-form-control {
+    width: 100%;
+    padding: 12px 20px;
+    box-sizing: border-box;
+}
+/* Styling for the email list container */
+.parent-email-list, .teacher-email-list {
+    margin-top: 10px;
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+    /* Style individual email list items */
+    .parent-email-list div, .teacher-email-list div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    /* Style the checkbox */
+    .parent-email-list input[type="checkbox"],
+    .teacher-email-list input[type="checkbox"] {
+        margin-right: 10px;
+        vertical-align: middle;
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Style the label for email */
+        .parent-email-list label, .teacher-email-list label {
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+        padding-left: 10px;
+        padding-top: 6px;
+        vertical-align: middle;
+    }
+
+    /* Add hover effect on email list items */
+    .parent-email-list div:hover,
+    .teacher-email-list div:hover {
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+/* Optional: Add some padding and borders for better visibility */
+.parent-email-list, .teacher-email-list {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+
+/* Modal Styles */
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-modal {
+    display: block;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 8px; /* Rounded corners*/
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 70vh;
+    overflow-y: auto; /* Ensure content is scrollable if needed */
+    animation: fadeIn 0.3s ease-out; /* Fade-in animation */
+}
+
+    .confirm-modal p {
+        font-size: 20px;
+    }
+
+/* Center Buttons in Modal */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 100px;
+    margin-top: 20px;
+}
+
+/* General Button Styling */
+.modal .btn-primary, .modal .btn-secondary {
+    font-size: 20px;
+    padding: 12px 24px;
+    border-radius: 4px; /* Rounded corners */
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.modal .btn-primary {
+    background-color: #007bff; /* Primary color */
+    color: #ffffff; /* Text color */
+}
+
+    .modal .btn-primary:hover {
+        background-color: #0056b3; /* Darker shade on hover */
+    }
+
+.modal .btn-secondary {
+    background-color: #17a2b8; /* Secondary color */
+    color: #ffffff; /* Text color */
+}
+
+    .modal .btn-secondary:hover {
+        background-color: #138496; /* Darker shade on hover */
+    }
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333; /* Darker color for visibility */
+    cursor: pointer; /* Pointer cursor */
+    transition: color 0.3s ease; /* Smooth color transition */
+}
+
+    .close-btn:hover {
+        color: #000; /* Darker color on hover */
+    }
+
+/* Modal Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
