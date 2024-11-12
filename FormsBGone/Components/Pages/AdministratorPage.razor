@@ -28,8 +28,8 @@
                 <button class="btn btn-dropdown">Directories</button>
                 <div class="dropdown-content">
                     <a href="/administrator">Forms Directory</a>
-                    <a href="#">Student Directory</a>
-                    <a href="#">Staff Directory</a>
+                    <a href="/administrator/students">Student Directory</a>
+                    <a href="/administrator/staff">Staff Directory</a>
                 </div>
             </div>
             <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
@@ -140,9 +140,6 @@
             </div>
         </div>
     }
-
-
-
 
     @if (isDeleteConfirmationVisible)
     {
@@ -495,10 +492,6 @@ else
         return $"/uploads/base/{fileName}";
     }
 
-
-
-
-    //big changes here
     private async Task CreateFormsForAllStudents(string filePath, IBrowserFile file)
     {
         int maxFormId = 0;
@@ -546,8 +539,6 @@ else
 
         await DbContext.SaveChangesAsync();
     }
-
-
 
     // Edit File Functionality
     private void EditFile(FileItem file)
