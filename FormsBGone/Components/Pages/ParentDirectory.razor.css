@@ -88,7 +88,7 @@ h1 {
     margin: 30px 50px 20px 80px;
 }
 
-.staff-directory h2 {
+.parent-directory h2 {
     font-size: 2.5rem;
     font-weight: bold;
     color: #003366; /* Dark blue */
@@ -99,7 +99,7 @@ h1 {
     align-items: center;
 }
 
-.add-teacher-btn .btn-primary {
+.add-parent-btn .btn-primary {
     background-color: #17a2b8; /* Light blue/teal */
     font-size: 18px;
     padding: 12px 20px;
@@ -151,7 +151,7 @@ h1 {
             border-color: #004080;
         }
 
-.no-teachers {
+.no-parents {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -168,13 +168,13 @@ h1 {
     color: #505050; /* Darker gray color */
 }
 
-.teacher-list {
+.parent-list {
     list-style-type: none;
     padding: 0;
     margin: 30px 50px 20px 80px;
 }
 
-.teacher-item {
+.parent-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -187,11 +187,11 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-    .teacher-item:hover {
+    .parent-item:hover {
         background-color: #f0f8ff; /* Light blue on hover */
     }
 
-.teacher-item-buttons button {
+.parent-item-buttons button {
     margin-left: 10px;
     font-size: 16px;
     padding: 10px 15px;

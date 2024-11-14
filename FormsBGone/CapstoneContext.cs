@@ -290,7 +290,8 @@ public partial class CapstoneContext : DbContext
             entity.Property(e => e.SuperiorEmail)
                 .HasMaxLength(50)
                 .HasColumnName("Superior_Email");
-            entity.Property(e => e.TeacherId).HasColumnName("Teacher_Id");
+            entity.Property(e => e.TeacherId)
+                .HasColumnName("Teacher_Id");
 
             entity.HasOne(d => d.SuperiorEmailNavigation).WithMany(p => p.Teachers)
                 .HasForeignKey(d => d.SuperiorEmail)
