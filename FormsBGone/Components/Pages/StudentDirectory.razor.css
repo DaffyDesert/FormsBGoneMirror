@@ -18,6 +18,12 @@ h1 {
     color: #003366; /* Dark blue */
 }
 
+h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #092daa;
+}
+
 /* Dropdown Styles */
 .dropdown {
     position: relative;
@@ -203,6 +209,19 @@ h1 {
     padding: 12px 20px;
 }
 
+.btn-view-forms {
+    background-color: #004080;
+    color: white;
+    border: none;
+    font-size: 18px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+    .btn-view-forms:hover {
+        background-color: #002a60;
+    }
+
 /* Modal Styles */
 .modal-overlay {
     position: fixed;
@@ -307,6 +326,84 @@ h1 {
     background-color: #fafafa;
 }
 
+.form-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.form-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+    color: #333; /* Text color */
+    transition: background-color 0.3s ease; /* Smooth transition on hover */
+}
+
+    .form-item:hover {
+        background-color: #f0f8ff; /* Light blue on hover */
+    }
+
+.form-name {
+    color: #007bff;
+    cursor: pointer; /* Pointer cursor to indicate it's clickable */
+}
+
+    .form-name:hover {
+        text-decoration: underline; /* Underline on hover */
+    }
+
+.status-box {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 100px;
+    display: inline-block;
+    color: white;
+}
+
+/* Status Colors */
+.status-assigned {
+    background-color: #808080; /* Grey for Assigned */
+}
+
+.status-not-reviewed {
+    background-color: #ff0000; /* Red for Not Reviewed */
+}
+
+.status-complete {
+    background-color: #008000; /* Green for Complete */
+}
+
+.status-unknown {
+    background-color: #cccccc; /* Light grey for unknown statuses */
+    color: black;
+}
+
+/* No Forms Message */
+.no-forms {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #fefefe; /* White background */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
+    color: #505050; /* Darker text color */
+    margin: 20px auto;
+    font-size: 20px;
+    width: 400px;
+    text-align: center;
+}
 
 /* Modal Styles */
 .confirm-overlay {
@@ -382,9 +479,12 @@ h1 {
     right: 10px;
     font-size: 24px;
     font-weight: bold;
-    color: #333; /* Darker color for visibility */
-    cursor: pointer; /* Pointer cursor */
-    transition: color 0.3s ease; /* Smooth color transition */
+    color: #333;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    transition: color 0.3s ease;
 }
 
     .close-btn:hover {
