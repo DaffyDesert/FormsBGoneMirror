@@ -1,4 +1,4 @@
-﻿@page "/administrator/staff"
+﻿@page "/administrator/parents"
 
 @using FormsBGone.Model;
 @using Microsoft.EntityFrameworkCore;
@@ -20,7 +20,6 @@
 
 @if (Authorized)
 {
-
     <div class="header">
         <h1>Welcome, @($"{currentAdmin?.FirstName} {currentAdmin?.LastName}")!</h1>
         <div class="header-right">
@@ -40,33 +39,33 @@
     <hr />
 
     <div class="header-container">
-        <div class="staff-directory">
-            <h2>Staff Directory</h2>
+        <div class="parent-directory">
+            <h2>Parent Directory</h2>
         </div>
 
         <div class="search-container">
-            <div class="add-teacher-btn">
-                <button class="btn btn-primary" @onclick="ShowAddTeacherModal">
-                    <i class="fas fa-plus"></i> Add Teacher
+            <div class="add-parent-btn">
+                <button class="btn btn-primary" @onclick="ShowAddParentModal">
+                    <i class="fas fa-plus"></i> Add Parent
                 </button>
             </div>
 
             <div class="search-bar">
-                <input id="search-entry" type="text" placeholder="Search teachers..." @bind="@searchQuery" @oninput="OnSearchInput" />
+                <input id="search-entry" type="text" placeholder="Search parents..." @bind="@searchQuery" @oninput="OnSearchInput" />
             </div>
         </div>
     </div>
 
-    @if (teachers.Any())
+    @if (parents.Any())
     {
-        <ul class="teacher-list">
-            @foreach (var teacher in filteredTeacherList)
+        <ul class="parent-list">
+            @foreach (var parent in filteredParentList)
             {
-                <li class="teacher-item">
-                    <span>@($"{teacher.FirstName} {teacher.LastName}")</span>
-                    <div class="teacher-item-buttons">
-                        <button class="btn btn-secondary" @onclick="() => EditTeacher(teacher)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => ShowDeleteTeacherConfirmation(teacher)">Delete</button>
+                <li class="parent-item">
+                    <span>@($"{parent.FirstName} {parent.LastName}")</span>
+                    <div class="parent-item-buttons">
+                        <button class="btn btn-secondary" @onclick="() => EditParent(parent)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteParentConfirmation(parent)">Delete</button>
                     </div>
                 </li>
             }
@@ -74,43 +73,43 @@
     }
     else
     {
-        <div class="no-teachers">
-            <p>No teachers found.</p>
+        <div class="no-parents">
+            <p>No parents found.</p>
         </div>
     }
 
-    @if (isAddTeacherModalVisible || isEditTeacherModalVisible)
+    @if (isAddParentModalVisible || isEditParentModalVisible)
     {
         <div class="modal-overlay">
             <div class="modal">
-                <h2>@(isAddMode ? "Add Teacher" : "Edit Teacher")</h2>
+                <h2>@(isAddMode ? "Add Parent" : "Edit Parent")</h2>
                 <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
 
                     <div class="form-group">
                         <label for="first-name">First Name</label>
-                        <InputText id="first-name" class="form-control" @bind-Value="newTeacher.FirstName" />
+                        <InputText id="first-name" class="form-control" @bind-Value="newParent.FirstName" />
                     </div>
 
                     <div class="form-group">
                         <label for="middle-initial">Middle Initial</label>
-                        <InputText id="middle-initial" class="form-control" @bind-Value="newTeacher.MiddleInitial" />
+                        <InputText id="middle-initial" class="form-control" @bind-Value="newParent.MiddleInitial" />
                     </div>
 
                     <div class="form-group">
                         <label for="last-name">Last Name</label>
-                        <InputText id="last-name" class="form-control" @bind-Value="newTeacher.LastName" />
+                        <InputText id="last-name" class="form-control" @bind-Value="newParent.LastName" />
                     </div>
 
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <InputText id="email" class="form-control" @bind-Value="newTeacher.Email" readonly="@(!isAddMode)" />
+                        <InputText id="email" class="form-control" @bind-Value="newParent.Email" readonly="@(!isAddMode)" />
                     </div>
 
                     <div class="button-group">
                         <button class="btn btn-primary" type="submit">Save</button>
-                        <button class="btn btn-secondary" type="button" @onclick="HideAddTeacherModal">Cancel</button>
+                        <button class="btn btn-secondary" type="button" @onclick="HideAddParentModal">Cancel</button>
                     </div>
                 </EditForm>
             </div>
@@ -119,13 +118,13 @@
 
     @if (isDeleteConfirmationVisible)
     {
-        <div class="confirm-overlay" @onclick="HideDeleteTeacherConfirmation">
+        <div class="confirm-overlay" @onclick="HideDeleteParentConfirmation">
             <div class="confirm-modal" @onclick:stopPropagation="true">
                 <h2>Confirm Deletion</h2>
-                <p>Are you sure you want to delete this teacher?</p>
+                <p>Are you sure you want to delete this parent?</p>
                 <div class="button-group">
                     <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
-                    <button class="btn btn-secondary" @onclick="HideDeleteTeacherConfirmation">Cancel</button>
+                    <button class="btn btn-secondary" @onclick="HideDeleteParentConfirmation">Cancel</button>
                 </div>
             </div>
         </div>
@@ -142,19 +141,18 @@ else
 
     private string searchQuery = string.Empty;
 
-    public List<Teacher> teachers = new();
-    public List<Teacher> filteredTeacherList = new();
+    public List<Parent> parents = new();
+    public List<Parent> filteredParentList = new();
 
-    public bool isAddTeacherModalVisible = false;
-    public bool isEditTeacherModalVisible = false;
+    public bool isAddParentModalVisible = false;
+    public bool isEditParentModalVisible = false;
     public bool isDeleteConfirmationVisible = false;
 
-    private TeacherFormModel newTeacher = new();
+    private ParentFormModel newParent = new();
     private EditContext editContext;
-    private Teacher selectedTeacher;
+    private Parent selectedParent;
     private bool isAddMode = true;
 
-    // Load Page
     protected override async Task OnInitializedAsync()
     {
         var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
@@ -165,7 +163,7 @@ else
             try
             {
                 currentAdmin = await GetCurrentAdminDetails();
-                await LoadTeachers();
+                await LoadParents();
             }
             catch (Exception ex)
             {
@@ -174,10 +172,10 @@ else
         }
     }
 
-    private async Task LoadTeachers()
+    private async Task LoadParents()
     {
-        teachers = await DbContext.Teachers.ToListAsync();
-        filteredTeacherList = teachers;
+        parents = await DbContext.Parents.ToListAsync();
+        filteredParentList = parents;
     }
 
     public async Task<Administrator> GetCurrentAdminDetails()
@@ -199,97 +197,77 @@ else
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
-    private void ShowAddTeacherModal()
+    private void ShowAddParentModal()
     {
         isAddMode = true;
-        newTeacher = new TeacherFormModel();
-        editContext = new EditContext(newTeacher);
-        isAddTeacherModalVisible = true;
+        newParent = new ParentFormModel();
+        editContext = new EditContext(newParent);
+        isAddParentModalVisible = true;
     }
 
-    private void EditTeacher(Teacher teacher)
+    private void EditParent(Parent parent)
     {
         isAddMode = false;
-        selectedTeacher = teacher;
-        newTeacher = new TeacherFormModel
-            {
-                FirstName = teacher.FirstName,
-                MiddleInitial = teacher.MiddleInitial,
-                LastName = teacher.LastName,
-                Email = teacher.Email
-            };
-        editContext = new EditContext(newTeacher);
-        isEditTeacherModalVisible = true;
+        selectedParent = parent;
+        newParent = new ParentFormModel
+        {
+            FirstName = parent.FirstName,
+            MiddleInitial = parent.MiddleInitial,
+            LastName = parent.LastName,
+            Email = parent.Email
+        };
+        editContext = new EditContext(newParent);
+        isEditParentModalVisible = true;
     }
 
     private async Task HandleValidSubmit()
     {
         if (isAddMode)
         {
-            var teacher = new Teacher
-                {
-                    FirstName = newTeacher.FirstName,
-                    MiddleInitial = newTeacher.MiddleInitial,
-                    LastName = newTeacher.LastName,
-                    Email = newTeacher.Email,
-                };
-
-            var lastTeacher = await DbContext.Teachers.OrderByDescending(t => t.TeacherId).FirstOrDefaultAsync();
-
-            teacher.TeacherId = (lastTeacher != null ? lastTeacher.TeacherId : 0) + 1;
-
-            var firstAdmin = await DbContext.Administrators.FirstOrDefaultAsync();
-
-            if (firstAdmin != null)
+            var parent = new Parent
             {
-                // Assign the first admin's email to the teacher
-                teacher.SuperiorEmail = firstAdmin.Email;
+                FirstName = newParent.FirstName,
+                MiddleInitial = newParent.MiddleInitial,
+                LastName = newParent.LastName,
+                Email = newParent.Email
+            };
 
-                Console.WriteLine($"New Teacher to Add - Name: {teacher.FirstName} {teacher.MiddleInitial} {teacher.LastName}, Email: {teacher.Email}, Assigned to Admin: {teacher.SuperiorEmail}");
-
-                DbContext.Teachers.Add(teacher);
-
-                await DbContext.SaveChangesAsync();
-            }
-            else
-            {
-                Console.WriteLine("No admins found in the database.");
-            }
+            Console.WriteLine($"New Parent to Add - Name: {parent.FirstName} {parent.MiddleInitial} {parent.LastName}, Email: {parent.Email}");
+        
+            DbContext.Parents.Add(parent);
         }
         else
         {
-            selectedTeacher.FirstName = newTeacher.FirstName;
-            selectedTeacher.MiddleInitial = newTeacher.MiddleInitial;
-            selectedTeacher.LastName = newTeacher.LastName;
-            selectedTeacher.Email = newTeacher.Email;
+            selectedParent.FirstName = newParent.FirstName;
+            selectedParent.MiddleInitial = newParent.MiddleInitial;
+            selectedParent.LastName = newParent.LastName;
+            selectedParent.Email = newParent.Email;
 
-            // Outputting the data to the console instead of saving
-            Console.WriteLine($"Updated Teacher - ID: {selectedTeacher.TeacherId}, Name: {selectedTeacher.FirstName} {selectedTeacher.MiddleInitial} {selectedTeacher.LastName}, Email: {selectedTeacher.Email}, Superior Email: {selectedTeacher.SuperiorEmail}");
-
-            DbContext.Teachers.Update(selectedTeacher);
+            Console.WriteLine($"Updated Parent - Name: {selectedParent.FirstName} {selectedParent.MiddleInitial} {selectedParent.LastName}, Email: {selectedParent.Email}");
+        
+            DbContext.Parents.Update(selectedParent);
         }
 
         await DbContext.SaveChangesAsync();
 
-        await LoadTeachers();
-        HideAddTeacherModal();
+        await LoadParents();
+        HideAddParentModal();
     }
 
-
-    private void ShowDeleteTeacherConfirmation(Teacher teacher)
+    private void ShowDeleteParentConfirmation(Parent parent)
     {
-        selectedTeacher = teacher;
+        selectedParent = parent;
         isDeleteConfirmationVisible = true;
     }
 
     private async Task ConfirmDelete()
     {
-        if (selectedTeacher != null)
+        if (selectedParent != null)
         {
             try
             {
                 var accountToDelete = await DbContext.Accounts
-                    .FirstOrDefaultAsync(a => a.Email == selectedTeacher.Email);
+                    .FirstOrDefaultAsync(a => a.Email == selectedParent.Email);
 
                 if (accountToDelete != null)
                 {
@@ -297,53 +275,53 @@ else
                 }
 
                 await DbContext.Database.ExecuteSqlRawAsync(
-                    "DELETE FROM TeacherStudent WHERE Teacher_Email = {0}",
-                    selectedTeacher.Email
+                    "DELETE FROM ParentStudent WHERE Parent_Email = {0}",
+                    selectedParent.Email
                 );
 
-                DbContext.Teachers.Remove(selectedTeacher);
+                DbContext.Parents.Remove(selectedParent);
 
                 await DbContext.SaveChangesAsync();
-                await LoadTeachers();
+                await LoadParents();
 
-                Console.WriteLine($"Successfully deleted teacher: {selectedTeacher.FirstName} {selectedTeacher.LastName}");
+                Console.WriteLine($"Successfully deleted parent: {selectedParent.FirstName} {selectedParent.LastName}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred while deleting the teacher: {ex.Message}");
+                Console.WriteLine($"An error occurred while deleting the parent: {ex.Message}");
             }
         }
 
-        HideDeleteTeacherConfirmation();
+        HideDeleteParentConfirmation();
     }
 
-    private void HideDeleteTeacherConfirmation()
+    private void HideDeleteParentConfirmation()
     {
         isDeleteConfirmationVisible = false;
     }
 
-    private void HideAddTeacherModal()
+    private void HideAddParentModal()
     {
-        isAddTeacherModalVisible = false;
-        isEditTeacherModalVisible = false;
+        isAddParentModalVisible = false;
+        isEditParentModalVisible = false;
     }
 
     private void OnSearchInput(ChangeEventArgs e)
     {
         searchQuery = e.Value?.ToString() ?? string.Empty;
-        FilterTeachers();
+        FilterParents();
     }
 
-    private void FilterTeachers()
+    private void FilterParents()
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
-            filteredTeacherList = teachers;
+            filteredParentList = parents;
         }
         else
         {
-            filteredTeacherList = teachers
-                .Where(t => $"{t.FirstName} {t.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            filteredParentList = parents
+                .Where(p => $"{p.FirstName} {p.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
     }
@@ -357,18 +335,19 @@ else
         NavManager.NavigateTo("/", true);
     }
 
-    public class TeacherFormModel
+    public class ParentFormModel
     {
         [Required(ErrorMessage = "First name is required.")]
         public string FirstName { get; set; }
 
+        [Required(ErrorMessage = "Middle initial is required.")]
         public string MiddleInitial { get; set; }
 
         [Required(ErrorMessage = "Last name is required.")]
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Email is required.")]
-        [RegularExpression(@"^[^@]+@okaloosa\.k12\.fl\.us$", ErrorMessage = "Invalid format- must end with '@okaloosa.k12.fl.us'.")]
+        [RegularExpression(@"^[^@]+@[^@]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email format.")]
         public string Email { get; set; }
     }
 }

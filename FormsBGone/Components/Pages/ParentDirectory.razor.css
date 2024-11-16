@@ -18,12 +18,6 @@ h1 {
     color: #003366; /* Dark blue */
 }
 
-h3 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #092daa;
-}
-
 /* Dropdown Styles */
 .dropdown {
     position: relative;
@@ -94,7 +88,7 @@ h3 {
     margin: 30px 50px 20px 80px;
 }
 
-.student-directory h2 {
+.parent-directory h2 {
     font-size: 2.5rem;
     font-weight: bold;
     color: #003366; /* Dark blue */
@@ -105,7 +99,7 @@ h3 {
     align-items: center;
 }
 
-.add-student-btn .btn-primary {
+.add-parent-btn .btn-primary {
     background-color: #17a2b8; /* Light blue/teal */
     font-size: 18px;
     padding: 12px 20px;
@@ -157,7 +151,7 @@ h3 {
             border-color: #004080;
         }
 
-.no-students {
+.no-parents {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -174,13 +168,13 @@ h3 {
     color: #505050; /* Darker gray color */
 }
 
-.student-list {
+.parent-list {
     list-style-type: none;
     padding: 0;
     margin: 30px 50px 20px 80px;
 }
 
-.student-item {
+.parent-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -193,11 +187,11 @@ h3 {
     transition: background-color 0.3s ease;
 }
 
-    .student-item:hover {
+    .parent-item:hover {
         background-color: #f0f8ff; /* Light blue on hover */
     }
 
-.student-item-buttons button {
+.parent-item-buttons button {
     margin-left: 10px;
     font-size: 16px;
     padding: 10px 15px;
@@ -208,19 +202,6 @@ h3 {
     font-size: 18px;
     padding: 12px 20px;
 }
-
-.btn-view-forms {
-    background-color: #004080;
-    color: white;
-    border: none;
-    font-size: 18px;
-    padding: 6px 12px;
-    cursor: pointer;
-}
-
-    .btn-view-forms:hover {
-        background-color: #002a60;
-    }
 
 /* Modal Styles */
 .modal-overlay {
@@ -268,141 +249,14 @@ h3 {
         display: block;
         font-size: 20px;
         font-weight: bold;
-        margin-bottom: 8px; 
-        color: #333; 
+        margin-bottom: 8px;
+        color: #333;
     }
 
 .custom-form-control {
     width: 100%;
     padding: 12px 20px;
     box-sizing: border-box;
-}
-/* Styling for the email list container */
-.parent-email-list, .teacher-email-list {
-    margin-top: 10px;
-    padding-left: 20px;
-    list-style-type: none;
-}
-
-    /* Style individual email list items */
-    .parent-email-list div, .teacher-email-list div {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-
-    /* Style the checkbox */
-    .parent-email-list input[type="checkbox"],
-    .teacher-email-list input[type="checkbox"] {
-        margin-right: 10px;
-        vertical-align: middle;
-        width: 20px;
-        height: 20px;
-    }
-
-    /* Style the label for email */
-        .parent-email-list label, .teacher-email-list label {
-        font-size: 16px;
-        color: #333;
-        cursor: pointer;
-        padding-left: 10px;
-        padding-top: 6px;
-        vertical-align: middle;
-    }
-
-    /* Add hover effect on email list items */
-    .parent-email-list div:hover,
-    .teacher-email-list div:hover {
-        background-color: #f0f0f0;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-/* Optional: Add some padding and borders for better visibility */
-.parent-email-list, .teacher-email-list {
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 4px;
-    background-color: #fafafa;
-}
-
-.form-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.form-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 20px;
-    padding: 10px;
-    margin-bottom: 8px;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
-    color: #333; /* Text color */
-    transition: background-color 0.3s ease; /* Smooth transition on hover */
-}
-
-    .form-item:hover {
-        background-color: #f0f8ff; /* Light blue on hover */
-    }
-
-.form-name {
-    color: #007bff;
-    cursor: pointer; /* Pointer cursor to indicate it's clickable */
-}
-
-    .form-name:hover {
-        text-decoration: underline; /* Underline on hover */
-    }
-
-.status-box {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-align: center;
-    min-width: 100px;
-    display: inline-block;
-    color: white;
-}
-
-/* Status Colors */
-.status-assigned {
-    background-color: #808080; /* Grey for Assigned */
-}
-
-.status-not-reviewed {
-    background-color: #ff0000; /* Red for Not Reviewed */
-}
-
-.status-complete {
-    background-color: #008000; /* Green for Complete */
-}
-
-.status-unknown {
-    background-color: #cccccc; /* Light grey for unknown statuses */
-    color: black;
-}
-
-/* No Forms Message */
-.no-forms {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background-color: #fefefe; /* White background */
-    border: 1px solid #ddd; /* Light border */
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
-    color: #505050; /* Darker text color */
-    margin: 20px auto;
-    font-size: 20px;
-    width: 400px;
-    text-align: center;
 }
 
 /* Modal Styles */
@@ -479,12 +333,9 @@ h3 {
     right: 10px;
     font-size: 24px;
     font-weight: bold;
-    color: #333;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    padding: 5px;
-    transition: color 0.3s ease;
+    color: #333; /* Darker color for visibility */
+    cursor: pointer; /* Pointer cursor */
+    transition: color 0.3s ease; /* Smooth color transition */
 }
 
     .close-btn:hover {

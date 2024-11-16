@@ -30,6 +30,7 @@
                     <a href="/administrator">Forms Directory</a>
                     <a href="/administrator/students">Student Directory</a>
                     <a href="/administrator/staff">Staff Directory</a>
+                    <a href="/administrator/parents">Parent Directory</a>
                 </div>
             </div>
             <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
@@ -74,6 +75,7 @@
                 <li class="student-item">
                     <span>@($"{student.FirstName} {student.LastName}")</span>
                     <div class="student-item-buttons">
+                        <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(student.StudentId)">View Forms</button>
                         <button class="btn btn-secondary" @onclick="() => EditStudent(student)">Edit</button>
                         <button class="btn btn-danger" @onclick="() => ShowDeleteStudentConfirmation(student)">Delete</button>
                     </div>
@@ -85,6 +87,45 @@
     {
         <div class="no-students">
             <p>No students found.</p>
+        </div>
+    }
+
+    @if (isViewFormsModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3>Form Directory: @selectedStudent?.FirstName @selectedStudent?.LastName </h3>
+                @if (selectedStudentForms?.Any() == true)
+                {
+                    <ul class="form-list">
+                        @foreach (var form in selectedStudentForms)
+                        {
+                            <li class="form-item">
+                                @if (form.Status == "Completed" && !string.IsNullOrEmpty(form.FilePath))
+                                {
+                                    <a href="@form.FilePath" target="_blank" class="form-name">
+                                        <strong>@form.FormName</strong>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <strong>@form.FormName</strong>
+                                }
+                                <span class="status-box @GetStatusClass(form.Status)">
+                                    @form.Status
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (selectedStudent != null)
+                {
+                    <div class="no-forms">
+                        <p>No forms found for @selectedStudent.FirstName @selectedStudent.LastName.</p>
+                    </div>
+                }
+                <button class="btn close-btn" @onclick="HideViewFormsModal">Close</button>
+            </div>
         </div>
     }
 
@@ -198,7 +239,6 @@ else
     <p>Error 401: Unauthorized</p>
 }
 
-
 @code {
     public bool Authorized = false;
     public Administrator currentAdmin = new Administrator();
@@ -213,12 +253,14 @@ else
     private List<string> allParentEmails = new();
     private List<string> allTeacherEmails = new();
 
+    private bool isViewFormsModalVisible = false;
     public bool isAddStudentModalVisible = false;
     public bool isEditStudentModalVisible = false;
     public bool isDeleteConfirmationVisible = false;
 
     private StudentFormModel newStudent = new();
     private EditContext editContext;
+    private List<Form> selectedStudentForms = new();
     private Student selectedStudent;
     private bool isAddMode = true;
     public bool isEditing = false;
@@ -274,9 +316,46 @@ else
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
+    private async Task ShowViewFormsModal(int studentId)
+    {
+        await LoadStudentForms(studentId);
+        isViewFormsModalVisible = true;
+    }
+
+    private void HideViewFormsModal()
+    {
+        isViewFormsModalVisible = false;
+        selectedStudentForms.Clear();
+        selectedStudent = null;
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Assigned" => "status-assigned",
+            "Not Reviewed" => "status-not-reviewed",
+            "Completed" => "status-complete",
+            _ => "status-unknown"
+        };
+    }
+
+    private async Task LoadStudentForms(int studentId)
+    {
+        selectedStudent = students.FirstOrDefault(s => s.StudentId == studentId);
+
+        if (selectedStudent != null)
+        {
+            selectedStudentForms = await DbContext.Forms
+                .Where(f => f.AssignedStudentId == studentId)
+                .ToListAsync();
+        }
+    }
+
     private void ShowAddStudentModal()
     {
         isAddMode = true;
+        isEditing = false;
         newStudent = new StudentFormModel();
         editContext = new EditContext(newStudent);
         isAddStudentModalVisible = true;
@@ -285,6 +364,38 @@ else
     }
 
     private void EditStudent(Student student)
+    {
+        isAddMode = false;
+        isEditing = true;
+        selectedStudent = student;
+        newStudent = new StudentFormModel
+            {
+                StudentId = student.StudentId.ToString(),
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                MiddleInitial = student.MiddleInitial,
+                Grade = student.Grade,
+                SelectedParentEmails = student.ParentEmails.Select(p => p.Email).ToList(),
+                SelectedTeacherEmails = student.TeacherEmails.Select(t => t.Email).ToList()
+            };
+        editContext = new EditContext(newStudent);
+        isEditStudentModalVisible = true;
+
+        selectedParentEmailMap.Clear();
+        selectedTeacherEmailMap.Clear();
+
+        foreach (var parentEmail in allParentEmails)
+        {
+            selectedParentEmailMap[parentEmail] = newStudent.SelectedParentEmails.Contains(parentEmail);
+        }
+
+        foreach (var teacherEmail in allTeacherEmails)
+        {
+            selectedTeacherEmailMap[teacherEmail] = newStudent.SelectedTeacherEmails.Contains(teacherEmail);
+        }
+    }
+
+    private void ShowFormsModal(Student student)
     {
         isAddMode = false;
         isEditing = true;
