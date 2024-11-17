@@ -1,0 +1,75 @@
+@attribute [TestClass]
+@inherits BunitTestContext
+@code
+{
+	[TestMethod]
+	public void TestAdminPageView_Unauthenticated()
+	{
+		// Set up
+		SetUpServices();
+
+		// Logout
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.Logout().Wait();
+
+		// Act
+		var cut = RenderComponent<ParentDirectory>();
+
+		// Validate
+		Assert.AreEqual(false, cut.Instance.Authorized);
+	}
+
+	[TestMethod]
+	public void TestAdminPageView_Authorized()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "admin3",
+				Password = "password"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<ParentDirectory>();
+		Thread.Sleep(5000); // Wait for SQL server to catch up
+
+		// Validate
+		Assert.AreEqual(true, cut.Instance.Authorized);
+		Assert.IsNotNull(cut.Instance.currentAdmin);
+		Assert.AreNotEqual(0, cut.Instance.parents.Count);
+		Assert.AreNotEqual(0, cut.Instance.filteredParentList.Count);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+
+	[TestMethod]
+	public void TestAdminPageView_Authenticated_Unauthorized()
+	{
+		// Set up
+		SetUpServices();
+
+		// Log in and Authorize
+		var response = Services.GetService<IAccountService>()!.LoginAsync(new LoginDTO()
+			{
+				Username = "dummy1",
+				Password = "dummy!"
+			}).Result;
+		var customAuthStateProvider = (CustomAuthenticationStateProvider)Services.GetService<AuthenticationStateProvider>()!;
+		customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
+
+		// Act
+		var cut = RenderComponent<ParentDirectory>();
+
+		// Validate
+		Assert.AreEqual(false, cut.Instance.Authorized);
+
+		// Logout
+		customAuthStateProvider.Logout().Wait();
+	}
+}
