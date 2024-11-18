@@ -42,7 +42,7 @@
     public RegisterDTO Register = new();
     public string AlertMessage { get; set; }
 
-    private async Task HandleSignup()
+    private bool ValidateInformation(RegisterDTO registerInfo)
     {
         // Check if any of the fields are empty
         if (string.IsNullOrWhiteSpace(Register.Email) ||
@@ -51,8 +51,23 @@
             string.IsNullOrWhiteSpace(Register.ConfirmPassword))
         {
             AlertMessage = "All fields are required."; // Set alert message
-            return; 
+            return false;
         }
+
+        if (Register.Email.Contains("@") && 
+            (Register.Email.Contains(".com") || Register.Email.Contains("okaloosa.k12.fl.us")))
+            return true;
+        else
+        {
+            AlertMessage = "Email must be a valid Email Address.";
+            return false;
+        }
+    }
+
+    private async Task HandleSignup()
+    {
+        if (!ValidateInformation(Register))
+            return;
 
         // Call registration service
         RegistrationResponse response = await accountService.RegisterAsync(Register);
