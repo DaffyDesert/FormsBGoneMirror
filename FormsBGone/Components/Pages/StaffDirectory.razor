@@ -1,0 +1,374 @@
+﻿@page "/administrator/staff"
+
+@using FormsBGone.Model;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Forms;
+@using System.ComponentModel.DataAnnotations;
+@using System.IO;
+@using System.Threading.Tasks;
+@using System.Linq;
+@using System.Diagnostics;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Authorization;
+
+@inject IAccountService accountService
+@inject NavigationManager NavManager
+@inject CapstoneContext DbContext
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+@if (Authorized)
+{
+
+    <div class="header">
+        <h1>Welcome, @($"{currentAdmin?.FirstName} {currentAdmin?.LastName}")!</h1>
+        <div class="header-right">
+            <div class="dropdown">
+                <button id="directory-navigation" class="btn btn-dropdown">Directories</button>
+                <div class="dropdown-content">
+                    <a id="forms-directory-link" href="/administrator">Forms Directory</a>
+                    <a id="student-directory-link" href="/administrator/students">Student Directory</a>
+                    <a id="staff-directory-link" href="/administrator/staff">Staff Directory</a>
+                    <a id="parent-directory-link" href="/administrator/parents">Parent Directory</a>
+                </div>
+            </div>
+            <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="header-container">
+        <div class="staff-directory">
+            <h2>Staff Directory</h2>
+        </div>
+
+        <div class="search-container">
+            <div class="add-teacher-btn">
+                <button class="btn btn-primary" @onclick="ShowAddTeacherModal">
+                    <i class="fas fa-plus"></i> Add Teacher
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input id="search-entry" type="text" placeholder="Search teachers..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+        </div>
+    </div>
+
+    @if (teachers.Any())
+    {
+        <ul class="teacher-list">
+            @foreach (var teacher in filteredTeacherList)
+            {
+                <li class="teacher-item">
+                    <span>@($"{teacher.FirstName} {teacher.LastName}")</span>
+                    <div class="teacher-item-buttons">
+                        <button class="btn btn-secondary" @onclick="() => EditTeacher(teacher)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteTeacherConfirmation(teacher)">Delete</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="no-teachers">
+            <p>No teachers found.</p>
+        </div>
+    }
+
+    @if (isAddTeacherModalVisible || isEditTeacherModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h2>@(isAddMode ? "Add Teacher" : "Edit Teacher")</h2>
+                <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label for="first-name">First Name</label>
+                        <InputText id="first-name" class="form-control" @bind-Value="newTeacher.FirstName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="middle-initial">Middle Initial</label>
+                        <InputText id="middle-initial" class="form-control" @bind-Value="newTeacher.MiddleInitial" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last-name">Last Name</label>
+                        <InputText id="last-name" class="form-control" @bind-Value="newTeacher.LastName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <InputText id="email" class="form-control" @bind-Value="newTeacher.Email" readonly="@(!isAddMode)" />
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-secondary" type="button" @onclick="HideAddTeacherModal">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (isDeleteConfirmationVisible)
+    {
+        <div class="confirm-overlay" @onclick="HideDeleteTeacherConfirmation">
+            <div class="confirm-modal" @onclick:stopPropagation="true">
+                <h2>Confirm Deletion</h2>
+                <p>Are you sure you want to delete this teacher?</p>
+                <div class="button-group">
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                    <button class="btn btn-secondary" @onclick="HideDeleteTeacherConfirmation">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Error 401: Unauthorized</p>
+}
+
+@code {
+    public bool Authorized = false;
+    public Administrator currentAdmin = new Administrator();
+
+    private string searchQuery = string.Empty;
+
+    public List<Teacher> teachers = new();
+    public List<Teacher> filteredTeacherList = new();
+
+    public bool isAddTeacherModalVisible = false;
+    public bool isEditTeacherModalVisible = false;
+    public bool isDeleteConfirmationVisible = false;
+
+    private TeacherFormModel newTeacher = new();
+    private EditContext editContext;
+    private Teacher selectedTeacher;
+    private bool isAddMode = true;
+
+    // Load Page
+    protected override async Task OnInitializedAsync()
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        Authorized = await customAuthProvider.IsAuthenticated("Admin");
+
+        if (Authorized)
+        {
+            try
+            {
+                currentAdmin = await GetCurrentAdminDetails();
+                await LoadTeachers();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving admin data: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task LoadTeachers()
+    {
+        teachers = await DbContext.Teachers.ToListAsync();
+        filteredTeacherList = teachers;
+    }
+
+    public async Task<Administrator> GetCurrentAdminDetails()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                return await DbContext.Administrators
+                    .FirstOrDefaultAsync(a => a.Email == email);
+            }
+        }
+
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private void ShowAddTeacherModal()
+    {
+        isAddMode = true;
+        newTeacher = new TeacherFormModel();
+        editContext = new EditContext(newTeacher);
+        isAddTeacherModalVisible = true;
+    }
+
+    private void EditTeacher(Teacher teacher)
+    {
+        isAddMode = false;
+        selectedTeacher = teacher;
+        newTeacher = new TeacherFormModel
+            {
+                FirstName = teacher.FirstName,
+                MiddleInitial = teacher.MiddleInitial,
+                LastName = teacher.LastName,
+                Email = teacher.Email
+            };
+        editContext = new EditContext(newTeacher);
+        isEditTeacherModalVisible = true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isAddMode)
+        {
+            var teacher = new Teacher
+                {
+                    FirstName = newTeacher.FirstName,
+                    MiddleInitial = newTeacher.MiddleInitial,
+                    LastName = newTeacher.LastName,
+                    Email = newTeacher.Email,
+                };
+
+            var lastTeacher = await DbContext.Teachers.OrderByDescending(t => t.TeacherId).FirstOrDefaultAsync();
+
+            teacher.TeacherId = (lastTeacher != null ? lastTeacher.TeacherId : 0) + 1;
+
+            var firstAdmin = await DbContext.Administrators.FirstOrDefaultAsync();
+
+            if (firstAdmin != null)
+            {
+                // Assign the first admin's email to the teacher
+                teacher.SuperiorEmail = firstAdmin.Email;
+
+                Console.WriteLine($"New Teacher to Add - Name: {teacher.FirstName} {teacher.MiddleInitial} {teacher.LastName}, Email: {teacher.Email}, Assigned to Admin: {teacher.SuperiorEmail}");
+
+                DbContext.Teachers.Add(teacher);
+
+                await DbContext.SaveChangesAsync();
+            }
+            else
+            {
+                Console.WriteLine("No admins found in the database.");
+            }
+        }
+        else
+        {
+            selectedTeacher.FirstName = newTeacher.FirstName;
+            selectedTeacher.MiddleInitial = newTeacher.MiddleInitial;
+            selectedTeacher.LastName = newTeacher.LastName;
+            selectedTeacher.Email = newTeacher.Email;
+
+            // Outputting the data to the console instead of saving
+            Console.WriteLine($"Updated Teacher - ID: {selectedTeacher.TeacherId}, Name: {selectedTeacher.FirstName} {selectedTeacher.MiddleInitial} {selectedTeacher.LastName}, Email: {selectedTeacher.Email}, Superior Email: {selectedTeacher.SuperiorEmail}");
+
+            DbContext.Teachers.Update(selectedTeacher);
+        }
+
+        await DbContext.SaveChangesAsync();
+
+        await LoadTeachers();
+        HideAddTeacherModal();
+    }
+
+
+    private void ShowDeleteTeacherConfirmation(Teacher teacher)
+    {
+        selectedTeacher = teacher;
+        isDeleteConfirmationVisible = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (selectedTeacher != null)
+        {
+            try
+            {
+                var accountToDelete = await DbContext.Accounts
+                    .FirstOrDefaultAsync(a => a.Email == selectedTeacher.Email);
+
+                if (accountToDelete != null)
+                {
+                    DbContext.Accounts.Remove(accountToDelete);
+                }
+
+                await DbContext.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM TeacherStudent WHERE Teacher_Email = {0}",
+                    selectedTeacher.Email
+                );
+
+                DbContext.Teachers.Remove(selectedTeacher);
+
+                await DbContext.SaveChangesAsync();
+                await LoadTeachers();
+
+                Console.WriteLine($"Successfully deleted teacher: {selectedTeacher.FirstName} {selectedTeacher.LastName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while deleting the teacher: {ex.Message}");
+            }
+        }
+
+        HideDeleteTeacherConfirmation();
+    }
+
+    private void HideDeleteTeacherConfirmation()
+    {
+        isDeleteConfirmationVisible = false;
+    }
+
+    private void HideAddTeacherModal()
+    {
+        isAddTeacherModalVisible = false;
+        isEditTeacherModalVisible = false;
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        FilterTeachers();
+    }
+
+    private void FilterTeachers()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredTeacherList = teachers;
+        }
+        else
+        {
+            filteredTeacherList = teachers
+                .Where(t => $"{t.FirstName} {t.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private async Task SignOut()
+    {
+        // Invalidate the authentication state
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthProvider.Logout();
+
+        NavManager.NavigateTo("/", true);
+    }
+
+    public class TeacherFormModel
+    {
+        [Required(ErrorMessage = "First name is required.")]
+        public string FirstName { get; set; }
+
+        public string MiddleInitial { get; set; }
+
+        [Required(ErrorMessage = "Last name is required.")]
+        public string LastName { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [RegularExpression(@"^[^@]+@okaloosa\.k12\.fl\.us$", ErrorMessage = "Invalid format- must end with '@okaloosa.k12.fl.us'.")]
+        public string Email { get; set; }
+    }
+}

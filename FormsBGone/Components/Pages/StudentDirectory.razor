@@ -1,0 +1,781 @@
+﻿@page "/administrator/students"
+
+@using FormsBGone.Model;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Forms;
+@using System.ComponentModel.DataAnnotations;
+@using System.IO;
+@using System.Threading.Tasks;
+@using System.Linq;
+@using System.Diagnostics;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Authorization;
+
+@inject IAccountService accountService
+@inject NavigationManager NavManager
+@inject CapstoneContext DbContext
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+@if (Authorized)
+{
+
+    <div class="header">
+        <h1>Welcome, @($"{currentAdmin?.FirstName} {currentAdmin?.LastName}")!</h1>
+        <div class="header-right">
+            <div class="dropdown">
+                <button id ="directory-navigation" class="btn btn-dropdown">Directories</button>
+                <div class="dropdown-content">
+                    <a id="forms-directory-link" href="/administrator">Forms Directory</a>
+                    <a id="student-directory-link" href="/administrator/students">Student Directory</a>
+                    <a id="staff-directory-link" href="/administrator/staff">Staff Directory</a>
+                    <a id="parent-directory-link" href="/administrator/parents">Parent Directory</a>
+                </div>
+            </div>
+            <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="header-container">
+        <div class="student-directory">
+            <h2>Student Directory</h2>
+        </div>
+
+        <div class="search-container">
+            <div class="add-student-btn">
+                <button class="btn btn-primary" @onclick="ShowAddStudentModal">
+                    <i class="fas fa-plus"></i> Add Student
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input id="search-entry" type="text" placeholder="Search students..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+
+            <div class="filter-dropdown">
+                <select id="filter-dropdown" @onchange="OnFilterChange">
+                    <option value="">All</option>
+                    @foreach (var grade in availableGrades)
+                    {
+                        <option value="@grade">@($"{grade}th Grade")</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (students.Any())
+    {
+        <ul class="student-list">
+            @foreach (var student in filteredStudentList)
+            {
+                <li class="student-item">
+                    <span>@($"{student.FirstName} {student.LastName}")</span>
+                    <div class="student-item-buttons">
+                        <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(student.StudentId)">View Forms</button>
+                        <button class="btn btn-secondary" @onclick="() => EditStudent(student)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteStudentConfirmation(student)">Delete</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="no-students">
+            <p>No students found.</p>
+        </div>
+    }
+
+    @if (isViewFormsModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3>Form Directory: @selectedStudent?.FirstName @selectedStudent?.LastName </h3>
+                @if (selectedStudentForms?.Any() == true)
+                {
+                    <ul class="form-list">
+                        @foreach (var form in selectedStudentForms)
+                        {
+                            <li class="form-item">
+                                @if (form.Status == "Completed" && !string.IsNullOrEmpty(form.FilePath))
+                                {
+                                    <a href="@form.FilePath" target="_blank" class="form-name">
+                                        <strong>@form.FormName</strong>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <strong>@form.FormName</strong>
+                                }
+                                <span class="status-box @GetStatusClass(form.Status)">
+                                    @form.Status
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (selectedStudent != null)
+                {
+                    <div class="no-forms">
+                        <p>No forms found for @selectedStudent.FirstName @selectedStudent.LastName.</p>
+                    </div>
+                }
+                <button class="btn close-btn" @onclick="HideViewFormsModal">Close</button>
+            </div>
+        </div>
+    }
+
+    @if (isAddStudentModalVisible || isEditStudentModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h2>@(isAddMode ? "Add New Student" : "Edit Student")</h2>
+                <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label>Student ID</label>
+                        <InputText @bind-Value="newStudent.StudentId" disabled="@isEditing" />
+                        @if (!string.IsNullOrEmpty(StudentIdErrorMessage))
+                        {
+                            <div class="validation-message">@StudentIdErrorMessage</div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <InputText @bind-Value="newStudent.FirstName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <InputText @bind-Value="newStudent.LastName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Middle Initial</label>
+                        <InputText @bind-Value="newStudent.MiddleInitial" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grade</label>
+                        <InputSelect @bind-Value="newStudent.Grade">
+                            <option value=-1>Select Grade</option>
+                            @for (int i = 5; i <= 12; i++)
+                            {
+                                <option value="@i">@($"{i}th Grade")</option>
+                            }
+                        </InputSelect>
+                        @if (!string.IsNullOrEmpty(GradeErrorMessage))
+                        {
+                            <div class="validation-message">@GradeErrorMessage</div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label>Parent Emails</label>
+                        <div class="parent-email-list">
+                            @foreach (var parentEmail in allParentEmails)
+                            {
+                                <div>
+                                    <InputCheckbox @bind-Value="selectedParentEmailMap[parentEmail]" />
+                                    <label>@parentEmail</label>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(ParentEmailErrorMessage))
+                            {
+                                <div class="validation-message">@ParentEmailErrorMessage</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teacher Emails</label>
+                        <div class="teacher-email-list">
+                            @foreach (var teacherEmail in allTeacherEmails)
+                            {
+                                <div>
+                                    <InputCheckbox @bind-Value="selectedTeacherEmailMap[teacherEmail]" />
+                                    <label>@teacherEmail</label>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(TeacherEmailErrorMessage))
+                            {
+                                <div class="validation-message">@TeacherEmailErrorMessage</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary" @onclick="SaveSelectedEmails">Save </button>
+                        <button type="button" class="btn btn-secondary" @onclick="() => isAddStudentModalVisible = isEditStudentModalVisible = false">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (isDeleteConfirmationVisible)
+    {
+        <div class="confirm-overlay" @onclick="HideDeleteStudentConfirmation">
+            <div class="confirm-modal" @onclick:stopPropagation="true">
+                <h2>Confirm Deletion</h2>
+                <p>Are you sure you want to delete this student?</p>
+                <div class="button-group">
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                    <button class="btn btn-secondary" @onclick="HideDeleteStudentConfirmation">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Error 401: Unauthorized</p>
+}
+
+@code {
+    public bool Authorized = false;
+    public Administrator currentAdmin = new Administrator();
+
+    private string searchQuery = string.Empty;
+    private string selectedFilter = string.Empty;
+
+    public List<Student> students = new();
+    public List<Student> filteredStudentList = new();
+    public List<int> availableGrades = new();
+
+    public List<string> allParentEmails = new();
+    public List<string> allTeacherEmails = new();
+
+    private bool isViewFormsModalVisible = false;
+    public bool isAddStudentModalVisible = false;
+    public bool isEditStudentModalVisible = false;
+    public bool isDeleteConfirmationVisible = false;
+
+    private StudentFormModel newStudent = new();
+    private EditContext editContext;
+    private List<Form> selectedStudentForms = new();
+    private Student selectedStudent;
+    private bool isAddMode = true;
+    public bool isEditing = false;
+
+    public string StudentIdErrorMessage { get; set; }
+    public string GradeErrorMessage { get; set; }
+    public string ParentEmailErrorMessage { get; set; }
+    public string TeacherEmailErrorMessage { get; set; }
+
+    public Dictionary<string, bool> selectedParentEmailMap = new Dictionary<string, bool>();
+    public Dictionary<string, bool> selectedTeacherEmailMap = new Dictionary<string, bool>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        Authorized = await customAuthProvider.IsAuthenticated("Admin");
+
+        if (Authorized)
+        {
+            try
+            {
+                currentAdmin = await GetCurrentAdminDetails();
+                students = await DbContext.Students.Include(s => s.ParentEmails).Include(s => s.TeacherEmails).ToListAsync();
+                filteredStudentList = students;
+
+                allParentEmails = await DbContext.Parents.Select(p => p.Email).Distinct().ToListAsync();
+                allTeacherEmails = await DbContext.Teachers.Select(t => t.Email).Distinct().ToListAsync();
+
+                allParentEmails.ForEach(email => selectedParentEmailMap[email] = false);
+                allTeacherEmails.ForEach(email => selectedTeacherEmailMap[email] = false);
+
+                availableGrades = students.Select(s => s.Grade).Distinct().OrderBy(g => g).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving data: {ex.Message}");
+            }
+        }
+    }
+
+    public async Task<Administrator> GetCurrentAdminDetails()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            if (!string.IsNullOrEmpty(email))
+            {
+                return await DbContext.Administrators.FirstOrDefaultAsync(a => a.Email == email);
+            }
+        }
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private async Task ShowViewFormsModal(int studentId)
+    {
+        await LoadStudentForms(studentId);
+        isViewFormsModalVisible = true;
+    }
+
+    private void HideViewFormsModal()
+    {
+        isViewFormsModalVisible = false;
+        selectedStudentForms.Clear();
+        selectedStudent = null;
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Assigned" => "status-assigned",
+            "Not Reviewed" => "status-not-reviewed",
+            "Completed" => "status-complete",
+            _ => "status-unknown"
+        };
+    }
+
+    private async Task LoadStudentForms(int studentId)
+    {
+        selectedStudent = students.FirstOrDefault(s => s.StudentId == studentId);
+
+        if (selectedStudent != null)
+        {
+            selectedStudentForms = await DbContext.Forms
+                .Where(f => f.AssignedStudentId == studentId)
+                .ToListAsync();
+        }
+    }
+
+    private void ShowAddStudentModal()
+    {
+        isAddMode = true;
+        isEditing = false;
+        newStudent = new StudentFormModel();
+        editContext = new EditContext(newStudent);
+        isAddStudentModalVisible = true;
+        selectedParentEmailMap = allParentEmails.ToDictionary(email => email, email => false);
+        selectedTeacherEmailMap = allTeacherEmails.ToDictionary(email => email, email => false);
+    }
+
+    private void EditStudent(Student student)
+    {
+        isAddMode = false;
+        isEditing = true;
+        selectedStudent = student;
+        newStudent = new StudentFormModel
+            {
+                StudentId = student.StudentId.ToString(),
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                MiddleInitial = student.MiddleInitial,
+                Grade = student.Grade,
+                SelectedParentEmails = student.ParentEmails.Select(p => p.Email).ToList(),
+                SelectedTeacherEmails = student.TeacherEmails.Select(t => t.Email).ToList()
+            };
+        editContext = new EditContext(newStudent);
+        isEditStudentModalVisible = true;
+
+        selectedParentEmailMap.Clear();
+        selectedTeacherEmailMap.Clear();
+
+        foreach (var parentEmail in allParentEmails)
+        {
+            selectedParentEmailMap[parentEmail] = newStudent.SelectedParentEmails.Contains(parentEmail);
+        }
+
+        foreach (var teacherEmail in allTeacherEmails)
+        {
+            selectedTeacherEmailMap[teacherEmail] = newStudent.SelectedTeacherEmails.Contains(teacherEmail);
+        }
+    }
+
+    private void ShowFormsModal(Student student)
+    {
+        isAddMode = false;
+        isEditing = true;
+        selectedStudent = student;
+        newStudent = new StudentFormModel
+            {
+                StudentId = student.StudentId.ToString(),
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                MiddleInitial = student.MiddleInitial,
+                Grade = student.Grade,
+                SelectedParentEmails = student.ParentEmails.Select(p => p.Email).ToList(),
+                SelectedTeacherEmails = student.TeacherEmails.Select(t => t.Email).ToList()
+            };
+        editContext = new EditContext(newStudent);
+        isEditStudentModalVisible = true;
+
+        selectedParentEmailMap.Clear();
+        selectedTeacherEmailMap.Clear();
+
+        foreach (var parentEmail in allParentEmails)
+        {
+            selectedParentEmailMap[parentEmail] = newStudent.SelectedParentEmails.Contains(parentEmail);
+        }
+
+        foreach (var teacherEmail in allTeacherEmails)
+        {
+            selectedTeacherEmailMap[teacherEmail] = newStudent.SelectedTeacherEmails.Contains(teacherEmail);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isAddMode)
+        {
+            StudentIdErrorMessage = GradeErrorMessage = ParentEmailErrorMessage = TeacherEmailErrorMessage = null;
+
+            // Check if the Student ID already exists
+            var existingStudent = await DbContext.Students
+                .FirstOrDefaultAsync(s => s.StudentId == int.Parse(newStudent.StudentId));
+            if (existingStudent != null)
+            {
+                StudentIdErrorMessage = "Student ID already in use.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Validate the grade and emails
+            if (newStudent.Grade == -1)
+            {
+                GradeErrorMessage = "Grade is required.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            if (newStudent.SelectedParentEmails.Count == 0)
+            {
+                ParentEmailErrorMessage = "Please select at least one parent email.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            if (newStudent.SelectedTeacherEmails.Count == 0)
+            {
+                TeacherEmailErrorMessage = "Please select at least one teacher email.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Create a new Student entity
+            var newEntity = new Student
+                {
+                    StudentId = int.TryParse(newStudent.StudentId.ToString(), out var studentId) ? studentId : 0,
+                    FirstName = newStudent.FirstName,
+                    LastName = newStudent.LastName,
+                    MiddleInitial = newStudent.MiddleInitial,
+                    Grade = newStudent.Grade
+                };
+
+            // Fetch the Parents and Teachers based on emails
+            var parents = await DbContext.Parents
+                .Where(p => newStudent.SelectedParentEmails.Contains(p.Email))
+                .ToListAsync();
+
+            var teachers = await DbContext.Teachers
+                .Where(t => newStudent.SelectedTeacherEmails.Contains(t.Email))
+                .ToListAsync();
+
+            // Link parents and teachers to the new student
+            newEntity.ParentEmails = parents;
+            newEntity.TeacherEmails = teachers;
+
+            // Create the folder for the student
+            var studentDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", newEntity.StudentId.ToString());
+            Directory.CreateDirectory(studentDirectoryPath);
+
+            // Output for debugging (optional)
+            Console.WriteLine("New student entity would be added:");
+            Console.WriteLine($"ID: {newEntity.StudentId}, Name: {newEntity.FirstName} {newEntity.MiddleInitial} {newEntity.LastName}, Grade: {newEntity.Grade}");
+            Console.WriteLine("Parent Emails: " + string.Join(", ", newEntity.ParentEmails.Select(p => p.Email)));
+            Console.WriteLine("Teacher Emails: " + string.Join(", ", newEntity.TeacherEmails.Select(t => t.Email)));
+
+            // Add the new Student to the DbContext
+            DbContext.Students.Add(newEntity);
+
+            await CreateFormsForAllStudents(studentDirectoryPath, newEntity);
+        }
+        else
+        {
+            // Fetch the selected Student entity from the database
+            var existingStudent = await DbContext.Students
+                .Include(s => s.ParentEmails)
+                .Include(s => s.TeacherEmails)
+                .FirstOrDefaultAsync(s => s.StudentId == selectedStudent.StudentId);
+
+            if (existingStudent == null)
+            {
+                StudentIdErrorMessage = "Student not found.";
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Update the Student's details
+            existingStudent.FirstName = newStudent.FirstName;
+            existingStudent.LastName = newStudent.LastName;
+            existingStudent.MiddleInitial = newStudent.MiddleInitial;
+            existingStudent.Grade = newStudent.Grade;
+
+            // Fetch the new Parents and Teachers based on emails
+            var newParents = await DbContext.Parents
+                .Where(p => newStudent.SelectedParentEmails.Contains(p.Email))
+                .ToListAsync();
+
+            var newTeachers = await DbContext.Teachers
+                .Where(t => newStudent.SelectedTeacherEmails.Contains(t.Email))
+                .ToListAsync();
+
+            // Update the relationships
+            existingStudent.ParentEmails = newParents;
+            existingStudent.TeacherEmails = newTeachers;
+
+            // Output for debugging (optional)
+            Console.WriteLine("Existing student entity would be updated:");
+            Console.WriteLine($"ID: {existingStudent.StudentId}, Name: {existingStudent.FirstName} {existingStudent.MiddleInitial} {existingStudent.LastName}, Grade: {existingStudent.Grade}");
+            Console.WriteLine("Updated Parent Emails: " + string.Join(", ", existingStudent.ParentEmails.Select(p => p.Email)));
+            Console.WriteLine("Updated Teacher Emails: " + string.Join(", ", existingStudent.TeacherEmails.Select(t => t.Email)));
+
+            // Update the existing student in the DbContext
+            DbContext.Students.Update(existingStudent);
+        }
+
+        await DbContext.SaveChangesAsync();
+
+        students = await DbContext.Students.ToListAsync();
+        filteredStudentList = students;
+
+        isAddStudentModalVisible = false;
+        isEditStudentModalVisible = false;
+    }
+
+    private async Task CreateFormsForAllStudents(string studentDirectoryPath, Student selectedStudent)
+    {
+        var adminFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "base");
+
+        var formFiles = Directory.GetFiles(adminFolderPath);
+
+        if (formFiles.Length == 0)
+        {
+            Console.WriteLine("No forms found in the admin folder.");
+            return;
+        }
+
+        int maxFormId = 0;
+
+        // Only get the max value if forms exist in the database
+        if (await DbContext.Forms.AnyAsync())
+        {
+            maxFormId = await DbContext.Forms.MaxAsync(f => f.FormId);
+        }
+
+        foreach (var formFilePath in formFiles)
+        {
+            // Get the form name and extension from the file name
+            var formNameFromFile = Path.GetFileNameWithoutExtension(formFilePath);
+            var fileExtension = Path.GetExtension(formFilePath);
+
+            // Retrieve metadata from an existing student's form with the same form name
+            var existingFormMetadata = await DbContext.Forms
+                                                       .Where(f => f.FormName == formNameFromFile && f.AssignedStudentId != null)
+                                                       .FirstOrDefaultAsync();
+
+            if (existingFormMetadata == null)
+            {
+                Console.WriteLine($"No existing form metadata found for {formNameFromFile}. Skipping this form.");
+                continue; // Skip this form if no metadata is found
+            }
+
+            // Extract metadata from the existing form
+            var shortDescription = existingFormMetadata.ShortDescription;
+            var expirationDate = existingFormMetadata.ExpirationDate;
+
+            // Create a new form for the selected student using the metadata
+            var studentForm = new Form
+                {
+                    FormId = ++maxFormId,
+                    ShortDescription = shortDescription,
+                    ExpirationDate = expirationDate,
+                    Status = "Assigned",
+                    AssignedStudentId = selectedStudent.StudentId,
+                    FormName = formNameFromFile
+                };
+
+            DbContext.Forms.Add(studentForm);
+
+            // Ensure the student's directory exists
+            Directory.CreateDirectory(studentDirectoryPath);
+
+            // Create the full path for the student's copy, including the extension
+            var studentFilePath = Path.Combine(studentDirectoryPath, $"{formNameFromFile}{fileExtension}");
+
+            try
+            {
+                using (var fileStream = new FileStream(formFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    using (var studentFileStream = new FileStream(studentFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        await fileStream.CopyToAsync(studentFileStream);
+                    }
+                }
+
+                // Update the form's file path for the student (relative URL)
+                studentForm.FilePath = $"/uploads/{selectedStudent.StudentId}/{formNameFromFile}{fileExtension}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error copying file {formNameFromFile}: {ex.Message}");
+            }
+        }
+
+        // Save changes for all the forms at once
+        await DbContext.SaveChangesAsync();
+
+        Console.WriteLine($"All base forms have been assigned to student {selectedStudent.StudentId}.");
+    }
+
+    private void ShowDeleteStudentConfirmation(Student student)
+    {
+        selectedStudent = student;
+        isDeleteConfirmationVisible = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        var studentWithForms = await DbContext.Students
+        .Include(s => s.Forms)
+        .FirstOrDefaultAsync(s => s.StudentId == selectedStudent.StudentId);
+
+        if (studentWithForms != null)
+        {
+            DbContext.Forms.RemoveRange(studentWithForms.Forms);
+        }
+
+        selectedStudent.ParentEmails.Clear();
+        selectedStudent.TeacherEmails.Clear();
+
+        DbContext.Students.Remove(selectedStudent);
+
+        var studentFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", selectedStudent.StudentId.ToString());
+
+        if (Directory.Exists(studentFolderPath))
+        {
+            Directory.Delete(studentFolderPath, true);
+        }
+
+        await DbContext.SaveChangesAsync();
+
+        students = await DbContext.Students.ToListAsync();
+        filteredStudentList = students;
+        isDeleteConfirmationVisible = false;
+    }
+
+    private void HideDeleteStudentConfirmation()
+    {
+        isDeleteConfirmationVisible = false;
+    }
+
+    private async Task SaveSelectedEmails()
+    {
+        foreach (var kvp in selectedParentEmailMap)
+        {
+            await HandleParentEmailChange(kvp.Key, kvp.Value);
+        }
+
+        foreach (var kvp in selectedTeacherEmailMap)
+        {
+            await HandleTeacherEmailChange(kvp.Key, kvp.Value);
+        }
+    }
+
+    private async Task HandleParentEmailChange(string parentEmail, bool isSelected)
+    {
+        selectedParentEmailMap[parentEmail] = isSelected;
+
+        if (isSelected)
+        {
+            if (!newStudent.SelectedParentEmails.Contains(parentEmail))
+                newStudent.SelectedParentEmails.Add(parentEmail);
+        }
+        else
+        {
+            newStudent.SelectedParentEmails.Remove(parentEmail);
+        }
+    }
+
+    private async Task HandleTeacherEmailChange(string teacherEmail, bool isSelected)
+    {
+        selectedTeacherEmailMap[teacherEmail] = isSelected;
+
+        if (isSelected)
+        {
+            if (!newStudent.SelectedTeacherEmails.Contains(teacherEmail))
+                newStudent.SelectedTeacherEmails.Add(teacherEmail);
+        }
+        else
+        {
+            newStudent.SelectedTeacherEmails.Remove(teacherEmail);
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        FilterStudents();
+    }
+
+    private void FilterStudents()
+    {
+        int? gradeFilter = int.TryParse(selectedFilter, out var grade) ? grade : (int?)null;
+
+        filteredStudentList = students
+            .Where(s => (string.IsNullOrEmpty(searchQuery) ||
+            $"{s.FirstName} {s.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+                        (!gradeFilter.HasValue || s.Grade == gradeFilter)) // Use parsed grade filter if available
+            .ToList();
+    }
+
+    private void OnFilterChange(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value?.ToString() ?? string.Empty;
+        FilterStudents();
+    }
+
+    private async Task SignOut()
+    {
+        // Invalidate the authentication state
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthProvider.Logout();
+
+        NavManager.NavigateTo("/", true);
+    }
+
+    public class StudentFormModel
+    {
+        [Required]
+        [RegularExpression(@"[1-9]\d{3}", ErrorMessage = "Student ID must be exactly 4 digits & cannot start with zero.")]
+        public string StudentId { get; set; }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
+
+        public string MiddleInitial { get; set; }
+
+        public List<string> SelectedParentEmails { get; set; } = new List<string>();
+
+        public List<string> SelectedTeacherEmails { get; set; } = new List<string>();
+
+        [Required]
+        public int Grade { get; set; } = -1;
+    }
+}

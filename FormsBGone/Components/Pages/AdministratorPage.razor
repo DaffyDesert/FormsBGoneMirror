@@ -25,11 +25,12 @@
         <h1>Welcome, @($"{currentAdmin?.FirstName} {currentAdmin?.LastName}")!</h1>
         <div class="header-right">
             <div class="dropdown">
-                <button class="btn btn-dropdown">Directories</button>
+                <button id="directory-navigation" class="btn btn-dropdown">Directories</button>
                 <div class="dropdown-content">
-                    <a href="/administrator">Forms Directory</a>
-                    <a href="#">Student Directory</a>
-                    <a href="#">Staff Directory</a>
+                    <a id="forms-directory-link" href="/administrator">Forms Directory</a>
+                    <a id="student-directory-link" href="/administrator/students">Student Directory</a>
+                    <a id="staff-directory-link" href="/administrator/staff">Staff Directory</a>
+                    <a id="parent-directory-link" href="/administrator/parents">Parent Directory</a>
                 </div>
             </div>
             <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
@@ -72,8 +73,9 @@
                     <ValidationSummary />
 
                     <div class="form-group">
-                    <label for="formName">Form Name:</label>
-                    <InputText id="formName" class="custom-form-control" @bind-Value="newFile.FormName" />
+                        <label for="formName">Form Name:</label>
+                        <InputText id="formName" class="custom-form-control" @bind-Value="newFile.FormName" />
+                        <ValidationMessage For="@(() => newFile.FormName)" />
                     </div>
 
                     <div class="form-group">
@@ -140,9 +142,6 @@
             </div>
         </div>
     }
-
-
-
 
     @if (isDeleteConfirmationVisible)
     {
@@ -495,10 +494,6 @@ else
         return $"/uploads/base/{fileName}";
     }
 
-
-
-
-    //big changes here
     private async Task CreateFormsForAllStudents(string filePath, IBrowserFile file)
     {
         int maxFormId = 0;
@@ -546,8 +541,6 @@ else
 
         await DbContext.SaveChangesAsync();
     }
-
-
 
     // Edit File Functionality
     private void EditFile(FileItem file)

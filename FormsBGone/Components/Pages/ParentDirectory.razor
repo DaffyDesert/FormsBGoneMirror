@@ -1,0 +1,353 @@
+﻿@page "/administrator/parents"
+
+@using FormsBGone.Model;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Forms;
+@using System.ComponentModel.DataAnnotations;
+@using System.IO;
+@using System.Threading.Tasks;
+@using System.Linq;
+@using System.Diagnostics;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Authorization;
+
+@inject IAccountService accountService
+@inject NavigationManager NavManager
+@inject CapstoneContext DbContext
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+@if (Authorized)
+{
+    <div class="header">
+        <h1>Welcome, @($"{currentAdmin?.FirstName} {currentAdmin?.LastName}")!</h1>
+        <div class="header-right">
+            <div class="dropdown">
+                <button id="directory-navigation" class="btn btn-dropdown">Directories</button>
+                <div class="dropdown-content">
+                    <a id="forms-directory-link" href="/administrator">Forms Directory</a>
+                    <a id="student-directory-link" href="/administrator/students">Student Directory</a>
+                    <a id="staff-directory-link" href="/administrator/staff">Staff Directory</a>
+                    <a id="parent-directory-link" href="/administrator/parents">Parent Directory</a>
+                </div>
+            </div>
+            <button class="btn btn-signout" @onclick="SignOut">Sign Out</button>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="header-container">
+        <div class="parent-directory">
+            <h2>Parent Directory</h2>
+        </div>
+
+        <div class="search-container">
+            <div class="add-parent-btn">
+                <button class="btn btn-primary" @onclick="ShowAddParentModal">
+                    <i class="fas fa-plus"></i> Add Parent
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input id="search-entry" type="text" placeholder="Search parents..." @bind="@searchQuery" @oninput="OnSearchInput" />
+            </div>
+        </div>
+    </div>
+
+    @if (parents.Any())
+    {
+        <ul class="parent-list">
+            @foreach (var parent in filteredParentList)
+            {
+                <li class="parent-item">
+                    <span>@($"{parent.FirstName} {parent.LastName}")</span>
+                    <div class="parent-item-buttons">
+                        <button class="btn btn-secondary" @onclick="() => EditParent(parent)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteParentConfirmation(parent)">Delete</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="no-parents">
+            <p>No parents found.</p>
+        </div>
+    }
+
+    @if (isAddParentModalVisible || isEditParentModalVisible)
+    {
+        <div class="modal-overlay">
+            <div class="modal">
+                <h2>@(isAddMode ? "Add Parent" : "Edit Parent")</h2>
+                <EditForm EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label for="first-name">First Name</label>
+                        <InputText id="first-name" class="form-control" @bind-Value="newParent.FirstName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="middle-initial">Middle Initial</label>
+                        <InputText id="middle-initial" class="form-control" @bind-Value="newParent.MiddleInitial" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last-name">Last Name</label>
+                        <InputText id="last-name" class="form-control" @bind-Value="newParent.LastName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <InputText id="email" class="form-control" @bind-Value="newParent.Email" readonly="@(!isAddMode)" />
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button class="btn btn-secondary" type="button" @onclick="HideAddParentModal">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (isDeleteConfirmationVisible)
+    {
+        <div class="confirm-overlay" @onclick="HideDeleteParentConfirmation">
+            <div class="confirm-modal" @onclick:stopPropagation="true">
+                <h2>Confirm Deletion</h2>
+                <p>Are you sure you want to delete this parent?</p>
+                <div class="button-group">
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                    <button class="btn btn-secondary" @onclick="HideDeleteParentConfirmation">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Error 401: Unauthorized</p>
+}
+
+@code {
+    public bool Authorized = false;
+    public Administrator currentAdmin = new Administrator();
+
+    private string searchQuery = string.Empty;
+
+    public List<Parent> parents = new();
+    public List<Parent> filteredParentList = new();
+
+    public bool isAddParentModalVisible = false;
+    public bool isEditParentModalVisible = false;
+    public bool isDeleteConfirmationVisible = false;
+
+    private ParentFormModel newParent = new();
+    private EditContext editContext;
+    private Parent selectedParent;
+    private bool isAddMode = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        Authorized = await customAuthProvider.IsAuthenticated("Admin");
+
+        if (Authorized)
+        {
+            try
+            {
+                currentAdmin = await GetCurrentAdminDetails();
+                await LoadParents();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving admin data: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task LoadParents()
+    {
+        parents = await DbContext.Parents.ToListAsync();
+        filteredParentList = parents;
+    }
+
+    public async Task<Administrator> GetCurrentAdminDetails()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                return await DbContext.Administrators
+                    .FirstOrDefaultAsync(a => a.Email == email);
+            }
+        }
+
+        throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
+    }
+
+    private void ShowAddParentModal()
+    {
+        isAddMode = true;
+        newParent = new ParentFormModel();
+        editContext = new EditContext(newParent);
+        isAddParentModalVisible = true;
+    }
+
+    private void EditParent(Parent parent)
+    {
+        isAddMode = false;
+        selectedParent = parent;
+        newParent = new ParentFormModel
+        {
+            FirstName = parent.FirstName,
+            MiddleInitial = parent.MiddleInitial,
+            LastName = parent.LastName,
+            Email = parent.Email
+        };
+        editContext = new EditContext(newParent);
+        isEditParentModalVisible = true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isAddMode)
+        {
+            var parent = new Parent
+            {
+                FirstName = newParent.FirstName,
+                MiddleInitial = newParent.MiddleInitial,
+                LastName = newParent.LastName,
+                Email = newParent.Email
+            };
+
+            Console.WriteLine($"New Parent to Add - Name: {parent.FirstName} {parent.MiddleInitial} {parent.LastName}, Email: {parent.Email}");
+        
+            DbContext.Parents.Add(parent);
+        }
+        else
+        {
+            selectedParent.FirstName = newParent.FirstName;
+            selectedParent.MiddleInitial = newParent.MiddleInitial;
+            selectedParent.LastName = newParent.LastName;
+            selectedParent.Email = newParent.Email;
+
+            Console.WriteLine($"Updated Parent - Name: {selectedParent.FirstName} {selectedParent.MiddleInitial} {selectedParent.LastName}, Email: {selectedParent.Email}");
+        
+            DbContext.Parents.Update(selectedParent);
+        }
+
+        await DbContext.SaveChangesAsync();
+
+        await LoadParents();
+        HideAddParentModal();
+    }
+
+    private void ShowDeleteParentConfirmation(Parent parent)
+    {
+        selectedParent = parent;
+        isDeleteConfirmationVisible = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (selectedParent != null)
+        {
+            try
+            {
+                var accountToDelete = await DbContext.Accounts
+                    .FirstOrDefaultAsync(a => a.Email == selectedParent.Email);
+
+                if (accountToDelete != null)
+                {
+                    DbContext.Accounts.Remove(accountToDelete);
+                }
+
+                await DbContext.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM ParentStudent WHERE Parent_Email = {0}",
+                    selectedParent.Email
+                );
+
+                DbContext.Parents.Remove(selectedParent);
+
+                await DbContext.SaveChangesAsync();
+                await LoadParents();
+
+                Console.WriteLine($"Successfully deleted parent: {selectedParent.FirstName} {selectedParent.LastName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while deleting the parent: {ex.Message}");
+            }
+        }
+
+        HideDeleteParentConfirmation();
+    }
+
+    private void HideDeleteParentConfirmation()
+    {
+        isDeleteConfirmationVisible = false;
+    }
+
+    private void HideAddParentModal()
+    {
+        isAddParentModalVisible = false;
+        isEditParentModalVisible = false;
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        FilterParents();
+    }
+
+    private void FilterParents()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredParentList = parents;
+        }
+        else
+        {
+            filteredParentList = parents
+                .Where(p => $"{p.FirstName} {p.LastName}".Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private async Task SignOut()
+    {
+        // Invalidate the authentication state
+        var customAuthProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthProvider.Logout();
+
+        NavManager.NavigateTo("/", true);
+    }
+
+    public class ParentFormModel
+    {
+        [Required(ErrorMessage = "First name is required.")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Middle initial is required.")]
+        public string MiddleInitial { get; set; }
+
+        [Required(ErrorMessage = "Last name is required.")]
+        public string LastName { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [RegularExpression(@"^[^@]+@[^@]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email format.")]
+        public string Email { get; set; }
+    }
+}

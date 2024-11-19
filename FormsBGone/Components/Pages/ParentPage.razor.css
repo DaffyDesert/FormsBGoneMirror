@@ -82,6 +82,7 @@ h3 {
         border-color: #004080;
     }
 
+.no-forms,
 .no-children {
     justify-content: center;
     align-items: center;

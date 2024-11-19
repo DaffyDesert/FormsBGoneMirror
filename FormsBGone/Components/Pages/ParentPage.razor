@@ -30,7 +30,7 @@
         </div>
         <div class="search-container">
             <div class="search-bar">
-                <input type="text" placeholder="Search children..." @bind="@searchQuery" @oninput="OnSearchInput" />
+                <input id="search-entry" type="text" placeholder="Search children..." @bind="@searchQuery" @oninput="OnSearchInput" />
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
                 {
                     <li class="student-item">
                         <span>@($"{child.FirstName} {child.LastName}")</span>
-                        <button class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(child.StudentId)">View Forms</button>
+                        <button id="show-view-form"class="btn btn-view-forms" @onclick="async () => await ShowViewFormsModal(child.StudentId)">View Forms</button>
                     </li>
                 }
             </ul>
@@ -94,7 +94,7 @@
                     </div>
                 }
 
-                <button class="btn btn-close" @onclick="HideViewFormsModal"></button>
+                <button id="hide-view-form" class="btn btn-close" @onclick="HideViewFormsModal"></button>
             </div>
         </div>
     }
@@ -134,15 +134,15 @@ else
 }
 
 @code {
-    private bool Authorized = false;
+    public bool Authorized = false;
     private bool isViewFormsModalVisible = false;
     private bool isFillFormModalVisible = false;
     private bool isFileSelected = false;
     private IBrowserFile uploadedFile;
     private string searchQuery = string.Empty;
-    private Parent currentParent;
-    private List<Student> children = new();
-    private List<Student> filteredChildren = new();
+    public Parent currentParent;
+    public List<Student> children = new();
+    public List<Student> filteredChildren = new();
     private List<Form> selectedChildForms = new();
     private Student selectedChild;
     private int selectedFormId;
@@ -174,7 +174,7 @@ else
         }
     }
 
-    private async Task<Parent> GetCurrentParentDetails()
+    public async Task<Parent> GetCurrentParentDetails()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
