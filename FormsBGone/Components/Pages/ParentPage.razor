@@ -59,7 +59,7 @@
     @if (isViewFormsModalVisible)
     {
         <div class="modal-overlay">
-            <div class="modal">
+            <div class="modal view-forms-modal">
                 <h3>Form Directory: @selectedChild?.FirstName @selectedChild?.LastName</h3>
 
                 @if (selectedChildForms?.Any() == true)
@@ -102,11 +102,11 @@
     @if (isFillFormModalVisible)
     {
         <div class="modal-overlay">
-            <div class="modal">
+            <div class="modal fill-form-modal">
                 <button class="btn-close" @onclick="HideFillFormModal"></button>
                 <h3>Fill Out Form</h3>
                 <p>
-                    <strong>Form Download:</strong>
+                    <strong>Form Download: </strong>
                     @if (!string.IsNullOrEmpty(pdfDownloadUrl) && !string.IsNullOrEmpty(pdfFileName))
                     {
                         <a href="@pdfDownloadUrl" download="@pdfFileName" class="download-link">@pdfFileName</a>
@@ -117,7 +117,7 @@
                     }
                 </p>
                 <p>
-                    <strong>Form Upload:</strong>
+                    <strong>Form Upload: </strong>
                     <InputFile OnChange="HandleFileUpload" class="file-input-inline" />
                 </p>
                 <div class="button-group-bottom">
