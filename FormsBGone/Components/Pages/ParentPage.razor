@@ -116,13 +116,15 @@
                         <span class="loading-message">Loading form...</span>
                     }
                 </p>
-                <p>
-                    <strong>Form Upload: </strong>
-                    <InputFile OnChange="HandleFileUpload" class="file-input-inline" />
-                </p>
+                <div class="form-group">
+                    <label for="fileUpload">Upload File:</label>
+                    <InputFile id="fileUpload" OnChange="HandleFileSelected" class="file-input-inline" />
+                    <p class="text-danger">@fileUploadError</p>
+                </div>
+
                 <div class="button-group-bottom">
                     <button class="btn-secondary" @onclick="HideFillFormModal">Cancel</button>
-                    <button class="btn-primary" @onclick="SubmitForm" disabled="@(isFileSelected == false)">Submit</button>
+                    <button class="btn-primary" @onclick="SubmitFileAsync" disabled="@(!isFileValid)">Submit</button>
                 </div>
             </div>
         </div>
@@ -149,6 +151,10 @@ else
     private int selectedStudentId;
     private string pdfDownloadUrl = null;
     private string pdfFileName = null;
+    private IBrowserFile selectedFile;
+    private const long MaxAllowedSize = 10 * 1024 * 1024;
+    private string fileUploadError = string.Empty;
+    private bool isFileValid = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -194,6 +200,74 @@ else
 
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+
+        if (selectedFile.Size > MaxAllowedSize)
+        {
+            fileUploadError = $"The file size exceeds the allowed limit of {MaxAllowedSize / (1024 * 1024)} MB.";
+            isFileValid = false;
+        }
+        else if (selectedFile.ContentType != "application/pdf")
+        {
+            fileUploadError = "Only PDF files are allowed.";
+            isFileValid = false;
+        }
+        else
+        {
+            fileUploadError = string.Empty; 
+            isFileValid = true;
+        }
+    }
+
+    private async Task SubmitFileAsync()
+    {
+        if (selectedFile == null)
+        {
+            fileUploadError = "No valid file selected.";
+            return;
+        }
+
+        try
+        {
+            var uploadsPath = Path.Combine(Env.WebRootPath, "uploads", selectedStudentId.ToString());
+            Console.WriteLine($"Uploads Path: {uploadsPath}");
+            Directory.CreateDirectory(uploadsPath); 
+
+            // Use the original file name
+            var fileName = selectedFile.Name;
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            Console.WriteLine($"File Path: {filePath}");
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await selectedFile.OpenReadStream(MaxAllowedSize).CopyToAsync(stream);
+            }
+
+            var formEntry = await DbContext.Forms.FirstOrDefaultAsync(f => f.FormId == selectedFormId && f.AssignedStudentId == selectedStudentId);
+            if (formEntry != null)
+            {
+                formEntry.Status = "Completed";
+                await DbContext.SaveChangesAsync();
+            }
+
+            isFileValid = false; 
+
+            HideFillFormModal();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error uploading file: {ex.Message}");
+            fileUploadError = "An error occurred while uploading the file.";
+        }
+    }
+
+
+
+
 
     private void OnSearchInput(ChangeEventArgs e)
     {

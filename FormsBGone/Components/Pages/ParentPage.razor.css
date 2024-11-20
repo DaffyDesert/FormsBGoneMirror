@@ -179,8 +179,12 @@ h3 {
 
 .fill-form-modal {
     max-width: none;
-    width: 700px;
-    height: 30vh;
+    width: 800px;
+    height: 40vh;
+}
+
+.form-group {
+    font-weight: bold;
 }
 
 .btn-close {
