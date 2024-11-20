@@ -121,11 +121,10 @@
                     <InputFile id="fileUpload" OnChange="HandleFileSelected" class="file-input-inline" />
                     <p class="text-danger">@fileUploadError</p>
                 </div>
-                <button class="btn btn-primary" @onclick="SubmitFileAsync" disabled="@(!isFileValid)">Submit</button>
 
                 <div class="button-group-bottom">
                     <button class="btn-secondary" @onclick="HideFillFormModal">Cancel</button>
-                    <button class="btn-primary" @onclick="SubmitForm" disabled="@(isFileSelected == false)">Submit</button>
+                    <button class="btn-primary" @onclick="SubmitFileAsync" disabled="@(!isFileValid)">Submit</button>
                 </div>
             </div>
         </div>
@@ -255,7 +254,6 @@ else
                 await DbContext.SaveChangesAsync();
             }
 
-            fileUploadError = "File uploaded successfully!";
             isFileValid = false; 
 
             HideFillFormModal();
