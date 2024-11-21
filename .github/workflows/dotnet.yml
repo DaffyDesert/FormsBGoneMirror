@@ -1,7 +1,4 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET CI/CD
 
 on:
   push:
@@ -10,21 +7,44 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: '8.0.x'
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --no-restore
+
     - name: Test
       env:
         ConnectionStrings__DefaultConnection: "Server=tcp:capstonebgone.database.windows.net,1433;Initial Catalog=capstone;Persist Security Info=False;User ID=${{ secrets.AZURE_SQL_USER }};Password=${{ secrets.AZURE_SQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
       run: dotnet test --no-restore
+
+    - name: Publish the app (FormsBGone.csproj)
+      run: |
+        # Publish only the FormsBGone project, ensuring no appsettings files are included
+        dotnet publish ./FormsBGone/FormsBGone.csproj -c Release -o ./publish
+        # Remove any conflicting appsettings files from the publish folder
+        find ./publish -name "appsettings*.json" -exec rm -f {} \;
+
+    - name: Deploy to DigitalOcean App Platform
+      env:
+        DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+        APP_NAME: "FormsBGone"
+      run: |
+        # Trigger deployment on App Platform using the DigitalOcean API
+        curl -X POST "https://api.digitalocean.com/v2/apps/$APP_NAME/deployments" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" \
+          -d '{"source_commit": "main"}'
+
