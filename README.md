@@ -13,73 +13,127 @@
 
 ### Administrator
 * <span style="color: green;">(Complete)</span> **Form Management:** Full CRUD operations over school documents.
-* <span style="color: red;">(Not Started)</span> **Student/Staff Management:** Manage student and teacher access levels with full CRUD operations.
+* <span style="color: green;">(Complete)</span> **Student/Staff Management:** Manage student and teacher access levels with full CRUD operations.
+* <span style="color: green;">(Complete)</span> **Parent Management:** Manage parent accounts with full CRUD operations.
 
 ### Teacher
 * <span style="color: green;">(Complete)</span> **View Form Status:** View the completion status of student forms, with the ability to filter students by class or search by name for easier management.
-* <span style="color: red;">(Not Started)</span> **Specialized Form Request** ***(Optional):*** Request special forms (e.g., field trip or movie forms) with admin approval required.
 
 ### Parent
 * <span style="color: green;">(Complete)</span> **Fill in Forms:** Log in, view, and complete forms for their children online. 
 
-## Getting Started
+## User Documentation
 
-### Dependencies
+[Forms-B-Gone User Manual](https://docs.google.com/document/d/1L7YCnLll8Kl8gXU1WruQHR0ikdp4gpfzPfapcY5MwRI/edit?tab=t.0#heading=h.vs6rphuip182)
 
-* Since the program has not been deployed yet, you'll need the following prerequisites in order to run it:
-	
-	* Visual Studio 2022 (the free, standard version is fine. Not Visual Studio Code)
-	* .NET 8.0 framework (installable through the Visual Studio Installer on Windows)
-* When you import the solution, Visual Studio should automatically restore your dependency packages.
-* Heres a list of those packages in the event that the restore fails:
+## File Overview
 
-<details><summary>Package List</summary>
+### **FormsBGone**
 
-	- BCrypt.Net-Next v 4.0.3
-	- Microsoft.AspNetCore.Authentication.JwtBearer v 8.0.8
-	- Microsoft.AspNetCore.Components.Authorization v 8.0.8
-	- Microsoft.EntityFrameworkCore v 8.0.8
-	- Microsoft.EntityFrameworkCore.Design v 8.0.8
-	- Microsoft.EntityFrameworkCore.SqlServer v 8.0.8
-	- Microsoft.EntityFrameworkCore.Tools v 8.0.8
-	- Microsoft.Extensions.DependencyInjection v 8.0.0
-	- Microsoft.Extensions.Hosting v 8.0.0
-	- Microsoft.IdentityModel.Tokens v 8.0.2
-	- Swashbuckle.AspNetCore v 6.8.0
-	- System.IdentityModel.Tokens.Jwt v 8.0.2
+#### 1. **FormsBGone.csproj**
+   - This is the main project file for the **FormsBGone** web application. It references all the necessary services, components, controllers, and models.
 
-</details>
+#### 2. **Connected Services**
+   - Contains services connected to external APIs or other services that the application communicates with (if applicable).
 
-### Installing
+#### 3. **Dependencies**
+   - Lists the NuGet packages and external libraries that are required for the application to function properly.
 
-* To install the program, follow these steps:
-	* Download the .zip file of this repository
-	* Extract the zip to any location of your choosing
-	* Open the `FormsBGone.sln` file with Visual Studio 2022
-	* If that didn't work, open Visual Studio 2022 manually
-	* Select "Open a project or solution"
-	* Navigate to the location of this project
-	* Select the `FormsBGone.sln` file
+#### 4. **Properties**
+   - Contains properties for the project, including settings for assembly information and other configurations.
 
-### Executing program
+#### 5. **wwwroot**
+   - Contains static files like images, CSS, and JavaScript files that are publicly accessible in the web application.
+   - **bootstrap**: Contains the Bootstrap CSS framework files.
+   - **Images**: Contains images used in the web application.
+   - **uploads**: Holds student ID files and forms uploaded by users.
+     - Includes:
+       - Base Folder with all empty pdfs 
+       - Folders of all students with their forms
+       - **app.css**: Custom styles for the application.
+       - **favicon.png**: The favicon for the app.
 
-* Since the program has not been published as an executable, you'll need to launch it through Visual Studio
-* Follow the Install instructions above, then press the green play icon at the top of the screen.
-	* The text next to the play icon should say "https"
-	* If the text reads "Select Startup Items", click that and select "https"
-* If that option doesn't work or is grayed out, open the Solution Explorer
-	* If the solution explorer is not present in your workspace, go to View > Solution Explorer
-* Expand the `FormsBGone.csproj` section in the Solution Explorer
-* Double-click `Program.cs`
-* The play button should work now
+#### 6. **Components**
+   - Contains Blazor components used to render parts of the UI.
+   - **Layout**
+     - `MainLayout.razor`: The main layout for the app that defines the layout structure for pages.
+   - **Pages**
+     - **Pages for different sections** of the app, such as:
+       - `About.razor`, `AdministratorPage.razor`, `LandingPage.razor`, `ParentDirectory.razor`, etc.
+       - Each page represents a different section of the web app and is built using Blazor.
+   - **Shared**
+     - `NavMenu.razor`: The navigation menu component used across the application.
+   - **_Imports.razor**: Contains namespaces that are globally imported across Razor files.
+   - **App.razor**: The entry point of the application that defines routing and the layout for the app.
+   - **AuthMessageHandler.cs**: Handles authentication messages, likely used for API requests with JWT tokens.
+   - **Routes.razor**: Handles routing logic for the application.
 
-## Testing Instructions
+#### 7. **Controllers**
+   - Contains the main API controller for managing account operations.
+   - `AccountController.cs`: Handles API requests related to user authentication and account management.
+   - `IAccountController.cs`: Interface for the `AccountController`.
 
-* To run the tests, open the solution in Visual studio using the install instructions above
-* With the solution open, navigate to Test > Test Explorer
-* Here you can see all tests in the project organized by file-system heirarchy
-* Run any test you wish, or all at once, from this menu
+#### 8. **DTOs (Data Transfer Objects)**
+   - These classes are used to transfer data between client and server in a structured way.
+   - `CustomUserClaims.cs`, `LoginDTO.cs`, `RegisterDTO.cs`, `UserSession.cs`: Handle user-specific data like login details and session management.
 
-## Demonstration Video
+#### 9. **Models**
+   - Contains the core business models for the application.
+   - Includes models for entities like `Account.cs`, `Administrator.cs`, `Form.cs`, `Parent.cs`, `Student.cs`, etc., representing the data used throughout the application.
 
-[Watch the demo video of Sprint 2](https://www.youtube.com/watch?v=jUfXuz36ozI)
+#### 10. **Repos (Repositories)**
+   - Contains classes responsible for data access logic.
+   - `AccountLogin.cs`: Handles login-related database queries or business logic.
+   - `IAccountLogin.cs`: Interface for account login operations.
+
+#### 11. **Responses**
+   - `CustomResponses.cs`: Defines custom response objects, likely used for API responses or error handling.
+
+#### 12. **Services**
+   - Contains business logic and operations for different parts of the app.
+   - `AccountService.cs`: Handles user account-related services.
+   - `IAccountService.cs`: Interface for `AccountService`.
+
+#### 13. **States**
+   - Contains state management files.
+   - `Constants.cs`: Holds constant values used throughout the app.
+   - `CustomAuthenticationStateProvider.cs`: Custom authentication logic for managing user sessions.
+   - `DecryptJWTService.cs`: Service for decrypting JWT tokens, likely used for authentication.
+
+#### 14. **appsettings.json**
+   - Configuration file containing application settings such as database connections, authentication settings, and other environment variables.
+
+#### 15. **CapstoneContext.cs**
+   - Contains the Entity Framework DbContext that interacts with the database to manage the application's data.
+
+#### 16. **Program.cs**
+   - The entry point for the application. It configures services and middleware required to run the app.
+
+---
+
+### **FormsBGoneTests**
+
+This project contains unit and integration tests for the **FormsBGone** web application.
+
+#### 1. **FormsBGoneTests.csproj**
+   - This is the project file for the test project. It references testing libraries and components required for testing the application.
+
+#### 2. **Dependencies**
+   - Lists the dependencies needed for testing, such as Bunit, xUnit, etc.
+
+#### 3. **wwwroot**
+   - Contains static files needed for the test environment, similar to the main project.
+
+#### 4. **_Imports.razor**
+   - Contains globally imported namespaces used for testing.
+
+#### 5. **appsettings.json**
+   - Contains configuration settings specific to the test environment.
+
+#### 6. **BunitTestContext.cs**
+   - Context file for configuring Bunit, a testing framework for Blazor components.
+
+#### 7. **Test Files**
+   - These files contain tests for different parts of the application, such as:
+     - `TestAccountController.cs`, `TestAdministratorPage.razor`, `TestLoginPage.razor`, etc.
+     - Each file contains unit or integration tests for the respective component or page in the main project.
