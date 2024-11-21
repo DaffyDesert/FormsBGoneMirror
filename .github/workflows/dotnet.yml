@@ -30,8 +30,12 @@ jobs:
         ConnectionStrings__DefaultConnection: "Server=tcp:capstonebgone.database.windows.net,1433;Initial Catalog=capstone;Persist Security Info=False;User ID=${{ secrets.AZURE_SQL_USER }};Password=${{ secrets.AZURE_SQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
       run: dotnet test --no-restore
 
-    - name: Publish the app
-      run: dotnet publish -c Release -o ./publish
+    - name: Publish the app (FormsBGone.csproj)
+      run: |
+        # Publish only the FormsBGone project, ensuring no appsettings files are included
+        dotnet publish ./FormsBGone/FormsBGone.csproj -c Release -o ./publish
+        # Remove any conflicting appsettings files from the publish folder
+        find ./publish -name "appsettings*.json" -exec rm -f {} \;
 
     - name: Deploy to DigitalOcean App Platform
       env:
@@ -43,3 +47,4 @@ jobs:
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" \
           -d '{"source_commit": "main"}'
+
