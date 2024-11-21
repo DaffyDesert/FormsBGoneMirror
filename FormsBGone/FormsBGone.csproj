@@ -1,54 +1,53 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Components\Layout\MainLayout.razor.css" />
-    <None Remove="wwwroot\Images\logo.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Components\Layout\MainLayout.razor.css" />
+		<None Remove="wwwroot\Images\logo.png" />
+		<None Remove="appsettings.json" />
+		<None Remove="appsettings.Development.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Components\Layout\MainLayout.razor.css">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Components\Layout\MainLayout.razor.css">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
-    <PackageReference Include="Syncfusion.Blazor.PdfViewer" Version="27.1.56" />
-    <PackageReference Include="Syncfusion.Licensing" Version="27.1.56" />
-    <PackageReference Include="Syncfusion.Pdf.Net.Core" Version="27.1.56" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.2" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
+		<PackageReference Include="Syncfusion.Blazor.PdfViewer" Version="27.1.56" />
+		<PackageReference Include="Syncfusion.Licensing" Version="27.1.56" />
+		<PackageReference Include="Syncfusion.Pdf.Net.Core" Version="27.1.56" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-    <Folder Include="wwwroot\uploads\1234\" />
-    <Folder Include="wwwroot\uploads\2345\" />
-    <Folder Include="wwwroot\uploads\3456\" />
-    <Folder Include="wwwroot\uploads\4567\" />
-    <Folder Include="wwwroot\uploads\base\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Services\" />
+		<Folder Include="wwwroot\uploads\base\" />
+		<None Include="wwwroot\uploads\**\*" />
+	</ItemGroup>
 
 </Project>
