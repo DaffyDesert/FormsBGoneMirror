@@ -43,5 +43,3 @@ jobs:
         token: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         args: apps update $APP_NAME --spec .do/app.yaml
 
-          -d '{"source_commit": "main"}'
-
