@@ -201,25 +201,59 @@ else
         throw new UnauthorizedAccessException("User is not authenticated or the email is invalid.");
     }
 
-    private void HandleFileSelected(InputFileChangeEventArgs e)
+    private async void HandleFileSelected(InputFileChangeEventArgs e)
     {
+        // reset error message for each selection
+        fileUploadError = string.Empty;
+        isFileValid = false;
+
         selectedFile = e.File;
 
+        // check if a file is selected
+        if (selectedFile == null)
+        {
+            fileUploadError = "No file selected. Please Upload a valid PDF file.";
+            isFileValid = false;
+            return;
+        }
+
+        // check file size
         if (selectedFile.Size > MaxAllowedSize)
         {
             fileUploadError = $"The file size exceeds the allowed limit of {MaxAllowedSize / (1024 * 1024)} MB.";
             isFileValid = false;
+            return;
         }
-        else if (selectedFile.ContentType != "application/pdf")
+
+        // check file type (PDF)
+        var fileExtension = Path.GetExtension(selectedFile.Name).ToLower();
+        if (fileExtension != ".pdf")
         {
-            fileUploadError = "Only PDF files are allowed.";
+            fileUploadError = "The file extension is not valid. Only PDF files are allowed.";
             isFileValid = false;
+            return;
         }
-        else
+        // enhanced MIME validation 
+        if (!await IsPdfFile(selectedFile))
         {
-            fileUploadError = string.Empty; 
-            isFileValid = true;
+            fileUploadError = "The file content is not a valid PDF.";
+            isFileValid = false;
+            return;
         }
+        // check if all pass
+        fileUploadError = string.Empty;
+        isFileValid = true;
+    }
+
+    private async Task<bool>IsPdfFile(IBrowserFile file)
+    {
+        byte[] buffer = new byte[4]; // magic number for PDF's
+        using (var stream = file.OpenReadStream())
+        {
+            await stream.ReadAsync(buffer, 0, buffer.Length);
+        }
+        string header = System.Text.Encoding.ASCII.GetString(buffer);
+        return header.StartsWith("%PDF");
     }
 
     private async Task SubmitFileAsync()
