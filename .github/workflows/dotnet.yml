@@ -41,5 +41,6 @@ jobs:
       uses: digitalocean/action-doctl@v2
       with:
         token: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-        args: apps update $APP_NAME --spec .do/app.yaml
+        args: apps update $APP_NAME --spec .do/app.yaml --wait
+
 
