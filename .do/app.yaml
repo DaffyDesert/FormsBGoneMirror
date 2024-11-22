@@ -10,4 +10,4 @@ services:
       branch: main
       repo_clone_url: https://github.com/uwf-capstone-fa2024/capstone-project-okaloosa-teachers-union.git
     build_command: "dotnet publish -c Release -o /workspace/publish"
-    source_dir: "/workspace/publish"
+    source_dir: "/workspace/FormsBGone"
