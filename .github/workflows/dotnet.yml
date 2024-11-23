@@ -38,13 +38,9 @@ jobs:
         find ./publish -name "appsettings*.json" -exec rm -f {} \;
 
     - name: Deploy to DigitalOcean App Platform
-      env:
-        DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-        APP_NAME: "FormsBGone"
-      run: |
-        # Trigger deployment on App Platform using the DigitalOcean API
-        curl -X POST "https://api.digitalocean.com/v2/apps/$APP_NAME/deployments" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $DIGITALOCEAN_API_TOKEN" \
-          -d '{"source_commit": "main"}'
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+        args: apps update $APP_NAME --spec .do/app.yaml --wait
+
 
